@@ -1,6 +1,6 @@
 # 🎮 KSOS — Portail de Jeux & Projets
 
-**Live →** [Ksos-game-portal](https://florianm974.github.io/Ksos-game-portal/)
+**Live →** [KSOS Portal](https://florianm974.github.io/KSOS/)
 
 Bienvenue sur le portail officiel de **KSOS**, un collectif de 4 développeurs. Ce dépôt héberge la page vitrine centralisant l'ensemble de nos projets (jeux vidéo, outils IA, pages de liens, etc.) en un seul endroit.
 
@@ -59,3 +59,4 @@ L'architecture du site permet d'ajouter un projet en quelques secondes **sans ja
   "hoverClass": "group-hover:text-purple-400",
   "badgeClass": "bg-purple-500/10 text-purple-400 border-purple-500/20"
 }
+```

@@ -1,531 +1,972 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" data-theme="default">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="color-scheme" content="dark">
-  <title>KSOS — Portail de jeux & Projets</title>
-  <meta name="description" content="Portail regroupant les jeux et projets du collectif KSOS, développeurs passionnés à La Réunion." />
-  
-  <!-- SEO & Réseaux Sociaux (Open Graph / Twitter Cards) -->
-  <meta property="og:title" content="KSOS — Portail de jeux & Projets" />
-  <meta property="og:description" content="Découvrez les jeux (Le Petit Bac, VroomDle...) et projets du collectif KSOS, développeurs passionnés à La Réunion." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://florianm974.github.io/Ksos-game-portal/" />
-  <!-- Remplacer l'URL ci-dessous par une vraie capture d'écran du site -->
-  <meta property="og:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop" />
-  <meta name="twitter:card" content="summary_large_image" />
-  
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Prévention du flash blanc au chargement -->
-  <script>
-    const savedTheme = localStorage.getItem('ksosTheme') || 'dark';
-    if (savedTheme === 'light') {
-      document.documentElement.classList.add('light-mode');
-    }
-    const savedColorTheme = localStorage.getItem('ksosColorTheme') || 'default';
-    document.documentElement.setAttribute('data-theme', savedColorTheme);
-  </script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>KSOS — Portail de jeux & Projets</title>
+    <meta
+      name="description"
+      content="Portail regroupant les jeux et projets du collectif KSOS, développeurs passionnés à La Réunion."
+    />
 
-  <style>
-    /* ==========================================================================
+    <!-- SEO & Réseaux Sociaux (Open Graph / Twitter Cards) -->
+    <meta property="og:title" content="KSOS — Portail de jeux & Projets" />
+    <meta
+      property="og:description"
+      content="Découvrez les jeux (Le Petit Bac, VroomDle...) et projets du collectif KSOS, développeurs passionnés à La Réunion."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://florianm974.github.io/KSOS/" />
+    <!-- Remplacer l'URL ci-dessous par une vraie capture d'écran du site -->
+    <meta
+      property="og:image"
+      content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Prévention du flash blanc au chargement -->
+    <script>
+      const savedTheme = localStorage.getItem("ksosTheme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.classList.add("light-mode");
+      }
+      const savedColorTheme =
+        localStorage.getItem("ksosColorTheme") || "default";
+      document.documentElement.setAttribute("data-theme", savedColorTheme);
+    </script>
+
+    <style>
+      /* ==========================================================================
        1. VARIABLES & RESET
     ========================================================================== */
-    :root {
-      /* Thème Premium : Corail / Orange / Violet */
-      --primary-rgb: 255, 82, 82;      
-      --secondary-rgb: 255, 154, 60;   
-      --success-rgb: 0, 212, 160;      
-      --accent-rgb: 168, 85, 247;      
-      
-      --bg-dark:    #03030a;
-      --blur-md:    36px;
-      --radius-sm:  14px;
-      --radius-lg:  28px;
-    }
+      :root {
+        /* Thème Premium : Corail / Orange / Violet */
+        --primary-rgb: 255, 82, 82;
+        --secondary-rgb: 255, 154, 60;
+        --success-rgb: 0, 212, 160;
+        --accent-rgb: 168, 85, 247;
 
-    /* Thèmes alternatifs */
-    [data-theme="cyberpunk"] {
-      --primary-rgb: 0, 240, 255;
-      --secondary-rgb: 112, 0, 255;
-      --success-rgb: 57, 255, 20;
-      --accent-rgb: 255, 0, 128;
-    }
-    [data-theme="toxic"] {
-      --primary-rgb: 57, 255, 20;
-      --secondary-rgb: 0, 212, 160;
-      --success-rgb: 0, 240, 255;
-      --accent-rgb: 168, 255, 0;
-    }
-    [data-theme="synthwave"] {
-      --primary-rgb: 255, 0, 255;
-      --secondary-rgb: 0, 255, 255;
-      --success-rgb: 255, 255, 0;
-      --accent-rgb: 138, 43, 226;
-    }
+        --bg-dark: #03030a;
+        --blur-md: 36px;
+        --radius-sm: 14px;
+        --radius-lg: 28px;
+      }
 
-    /* MODE CLAIR (Adaptatif) */
-    html.light-mode {
-      --primary-rgb: 214, 58, 58;
-      --secondary-rgb: 196, 102, 10;
-      --success-rgb: 5, 150, 105;
-      --accent-rgb: 128, 0, 128;
-    }
-    html.light-mode[data-theme="cyberpunk"] { --primary-rgb: 0, 140, 160; --secondary-rgb: 80, 0, 180; --accent-rgb: 180, 0, 90; }
-    html.light-mode[data-theme="toxic"] { --primary-rgb: 30, 160, 10; --secondary-rgb: 0, 140, 100; --accent-rgb: 120, 180, 0; }
-    html.light-mode[data-theme="synthwave"] { --primary-rgb: 180, 0, 180; --secondary-rgb: 0, 150, 150; --accent-rgb: 100, 30, 180; }
+      /* Thèmes alternatifs */
+      [data-theme="cyberpunk"] {
+        --primary-rgb: 0, 240, 255;
+        --secondary-rgb: 112, 0, 255;
+        --success-rgb: 57, 255, 20;
+        --accent-rgb: 255, 0, 128;
+      }
+      [data-theme="toxic"] {
+        --primary-rgb: 57, 255, 20;
+        --secondary-rgb: 0, 212, 160;
+        --success-rgb: 0, 240, 255;
+        --accent-rgb: 168, 255, 0;
+      }
+      [data-theme="synthwave"] {
+        --primary-rgb: 255, 0, 255;
+        --secondary-rgb: 0, 255, 255;
+        --success-rgb: 255, 255, 0;
+        --accent-rgb: 138, 43, 226;
+      }
 
-    html.light-mode, html.light-mode body {
-      background-color: #faf7f2 !important;
-      color: #1a1714 !important;
-    }
-    
-    html.light-mode .text-white { color: #1a1714 !important; }
-    html.light-mode .text-gray-300 { color: #374151 !important; }
-    html.light-mode .text-gray-400 { color: #4b5563 !important; }
-    html.light-mode .text-gray-500 { color: #6b7280 !important; }
-    html.light-mode .text-gray-600 { color: #9ca3af !important; }
+      /* MODE CLAIR (Adaptatif) */
+      html.light-mode {
+        --primary-rgb: 214, 58, 58;
+        --secondary-rgb: 196, 102, 10;
+        --success-rgb: 5, 150, 105;
+        --accent-rgb: 128, 0, 128;
+      }
+      html.light-mode[data-theme="cyberpunk"] {
+        --primary-rgb: 0, 140, 160;
+        --secondary-rgb: 80, 0, 180;
+        --accent-rgb: 180, 0, 90;
+      }
+      html.light-mode[data-theme="toxic"] {
+        --primary-rgb: 30, 160, 10;
+        --secondary-rgb: 0, 140, 100;
+        --accent-rgb: 120, 180, 0;
+      }
+      html.light-mode[data-theme="synthwave"] {
+        --primary-rgb: 180, 0, 180;
+        --secondary-rgb: 0, 150, 150;
+        --accent-rgb: 100, 30, 180;
+      }
 
-    html.light-mode .bg-orb-1 { background: radial-gradient(circle at 38% 38%, rgba(var(--primary-rgb),0.13) 0%, transparent 66%) !important; }
-    html.light-mode .bg-orb-2 { background: radial-gradient(circle at 62% 62%, rgba(var(--accent-rgb),0.11) 0%, transparent 66%) !important; }
-    html.light-mode .bg-orb-3 { background: radial-gradient(circle at 50% 50%, rgba(var(--secondary-rgb),0.09) 0%, transparent 66%) !important; }
+      html.light-mode,
+      html.light-mode body {
+        background-color: #faf7f2 !important;
+        color: #1a1714 !important;
+      }
 
-    html.light-mode .bg-darkCard {
-      background: linear-gradient(145deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.32) 100%), rgba(255,255,255,0.42) !important;
-      border: 1px solid rgba(255,255,255,0.48) !important;
-      border-top: 2px solid rgba(255,255,255,0.94) !important;
-      border-left: 2px solid rgba(255,255,255,0.72) !important;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.96) !important;
-    }
-    html.light-mode .bg-darkCard:hover {
-      background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%), rgba(255,255,255,0.5) !important;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.96) !important;
-    }
-    
-    html.light-mode .glass-pill {
-      background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06);
-    }
-    html.light-mode .glass-pill:hover {
-      background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1);
-    }
+      html.light-mode .text-white {
+        color: #1a1714 !important;
+      }
+      html.light-mode .text-gray-300 {
+        color: #374151 !important;
+      }
+      html.light-mode .text-gray-400 {
+        color: #4b5563 !important;
+      }
+      html.light-mode .text-gray-500 {
+        color: #6b7280 !important;
+      }
+      html.light-mode .text-gray-600 {
+        color: #9ca3af !important;
+      }
 
-    /* Styles Modale Paramètres */
-    #settings-notch { padding-top: max(4px, env(safe-area-inset-top)); }
-    .top-notch {
-      background: rgba(255,255,255,0.055); backdrop-filter: blur(22px);
-      border-color: rgba(255,255,255,0.11); box-shadow: 0 8px 32px rgba(0,0,0,0.42);
-    }
-    html.light-mode .top-notch {
-      background: rgba(255,255,255,0.72) !important; border-color: rgba(0,0,0,0.07) !important;
-      box-shadow: 0 5px 22px rgba(0,0,0,0.05) !important;
-    }
-    .custom-modal {
-      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%), rgba(9,9,14,0.93) !important;
-      backdrop-filter: blur(55px) saturate(200%) !important;
-      border: 1px solid rgba(255,255,255,0.09) !important; border-top: 1px solid rgba(255,255,255,0.28) !important;
-    }
-    html.light-mode .custom-modal {
-      background: linear-gradient(145deg, rgba(255,255,255,0.96) 0%, rgba(250,247,242,0.86) 100%), rgba(255,255,255,0.82) !important;
-      border: 1px solid rgba(255,255,255,0.68) !important; border-top: 2px solid #ffffff !important;
-      box-shadow: 0 26px 65px rgba(0,0,0,0.09) !important;
-    }
-    .toggle-track { transition: background 0.3s ease; }
-    html.light-mode .toggle-track { background: rgba(0,0,0,0.15) !important; }
-    input:checked ~ .toggle-track { background: linear-gradient(135deg, rgb(var(--primary-rgb)) 0%, rgb(var(--secondary-rgb)) 100%) !important; }
+      html.light-mode .bg-orb-1 {
+        background: radial-gradient(
+          circle at 38% 38%,
+          rgba(var(--primary-rgb), 0.13) 0%,
+          transparent 66%
+        ) !important;
+      }
+      html.light-mode .bg-orb-2 {
+        background: radial-gradient(
+          circle at 62% 62%,
+          rgba(var(--accent-rgb), 0.11) 0%,
+          transparent 66%
+        ) !important;
+      }
+      html.light-mode .bg-orb-3 {
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(var(--secondary-rgb), 0.09) 0%,
+          transparent 66%
+        ) !important;
+      }
 
-    #theme-selector label { opacity: 0.6; transition: all 0.3s ease; }
-    #theme-selector label:hover { opacity: 0.9; }
-    #theme-selector label:has(input[type="radio"]:checked) {
-      opacity: 1; background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.6);
-    }
-    #theme-selector input[type="radio"]:checked + div {
-      transform: scale(1.25); box-shadow: 0 0 0 2px var(--bg-dark), 0 0 0 4px #ffffff, 0 0 15px rgba(255, 255, 255, 0.8);
-    }
-    html.light-mode #theme-selector label:has(input[type="radio"]:checked) {
-      background: #ffffff; border-color: rgba(0,0,0,0.15);
-    }
-    html.light-mode #theme-selector input[type="radio"]:checked + div {
-      box-shadow: 0 0 0 2px #faf7f2, 0 0 0 4px #1a1714, 0 0 12px rgba(0, 0, 0, 0.2);
-    }
-    html.light-mode .custom-modal h3, html.light-mode .custom-modal span { color: #1a1714 !important; }
-    html.light-mode .custom-modal button svg { color: #1a1714 !important; }
+      html.light-mode .bg-darkCard {
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.78) 0%,
+            rgba(255, 255, 255, 0.32) 100%
+          ),
+          rgba(255, 255, 255, 0.42) !important;
+        border: 1px solid rgba(255, 255, 255, 0.48) !important;
+        border-top: 2px solid rgba(255, 255, 255, 0.94) !important;
+        border-left: 2px solid rgba(255, 255, 255, 0.72) !important;
+        box-shadow:
+          0 16px 40px rgba(0, 0, 0, 0.05),
+          inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
+      }
+      html.light-mode .bg-darkCard:hover {
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.9) 0%,
+            rgba(255, 255, 255, 0.4) 100%
+          ),
+          rgba(255, 255, 255, 0.5) !important;
+        box-shadow:
+          0 25px 50px rgba(0, 0, 0, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
+      }
 
-    html, body {
-      background-color: var(--bg-dark);
-      color: #f0f0f3;
-      font-family: 'Outfit', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      min-height: 100vh;
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-    }
+      html.light-mode .glass-pill {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: rgba(0, 0, 0, 0.06);
+      }
+      html.light-mode .glass-pill:hover {
+        background: rgba(0, 0, 0, 0.06);
+        border-color: rgba(0, 0, 0, 0.1);
+      }
 
-    .animate-fade-in {
-      opacity: 0;
-      animation: appFadeIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
+      /* Styles Modale Paramètres */
+      #settings-notch {
+        padding-top: max(4px, env(safe-area-inset-top));
+      }
+      .top-notch {
+        background: rgba(255, 255, 255, 0.055);
+        backdrop-filter: blur(22px);
+        border-color: rgba(255, 255, 255, 0.11);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.42);
+      }
+      html.light-mode .top-notch {
+        background: rgba(255, 255, 255, 0.72) !important;
+        border-color: rgba(0, 0, 0, 0.07) !important;
+        box-shadow: 0 5px 22px rgba(0, 0, 0, 0.05) !important;
+      }
+      .custom-modal {
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.02) 100%
+          ),
+          rgba(9, 9, 14, 0.93) !important;
+        backdrop-filter: blur(55px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.28) !important;
+      }
+      html.light-mode .custom-modal {
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.96) 0%,
+            rgba(250, 247, 242, 0.86) 100%
+          ),
+          rgba(255, 255, 255, 0.82) !important;
+        border: 1px solid rgba(255, 255, 255, 0.68) !important;
+        border-top: 2px solid #ffffff !important;
+        box-shadow: 0 26px 65px rgba(0, 0, 0, 0.09) !important;
+      }
+      .toggle-track {
+        transition: background 0.3s ease;
+      }
+      html.light-mode .toggle-track {
+        background: rgba(0, 0, 0, 0.15) !important;
+      }
+      input:checked ~ .toggle-track {
+        background: linear-gradient(
+          135deg,
+          rgb(var(--primary-rgb)) 0%,
+          rgb(var(--secondary-rgb)) 100%
+        ) !important;
+      }
 
-    @keyframes appFadeIn {
-      0%   { opacity: 0; transform: scale(1.02); filter: blur(10px); }
-      100% { opacity: 1; transform: none; filter: none; }
-    }
+      #theme-selector label {
+        opacity: 0.6;
+        transition: all 0.3s ease;
+      }
+      #theme-selector label:hover {
+        opacity: 0.9;
+      }
+      #theme-selector label:has(input[type="radio"]:checked) {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.6);
+      }
+      #theme-selector input[type="radio"]:checked + div {
+        transform: scale(1.25);
+        box-shadow:
+          0 0 0 2px var(--bg-dark),
+          0 0 0 4px #ffffff,
+          0 0 15px rgba(255, 255, 255, 0.8);
+      }
+      html.light-mode #theme-selector label:has(input[type="radio"]:checked) {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.15);
+      }
+      html.light-mode #theme-selector input[type="radio"]:checked + div {
+        box-shadow:
+          0 0 0 2px #faf7f2,
+          0 0 0 4px #1a1714,
+          0 0 12px rgba(0, 0, 0, 0.2);
+      }
+      html.light-mode .custom-modal h3,
+      html.light-mode .custom-modal span {
+        color: #1a1714 !important;
+      }
+      html.light-mode .custom-modal button svg {
+        color: #1a1714 !important;
+      }
 
-    h1, h2, h3, h4, .font-display { 
-      font-family: 'Space Grotesk', sans-serif !important; 
-      letter-spacing: -0.04em !important; 
-    }
+      html,
+      body {
+        background-color: var(--bg-dark);
+        color: #f0f0f3;
+        font-family: "Outfit", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+      }
 
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+      .animate-fade-in {
+        opacity: 0;
+        animation: appFadeIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      }
 
-    /* ==========================================================================
+      @keyframes appFadeIn {
+        0% {
+          opacity: 0;
+          transform: scale(1.02);
+          filter: blur(10px);
+        }
+        100% {
+          opacity: 1;
+          transform: none;
+          filter: none;
+        }
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      .font-display {
+        font-family: "Space Grotesk", sans-serif !important;
+        letter-spacing: -0.04em !important;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      /* ==========================================================================
        2. FOND — ORBS FLOTTANTS ANIMÉS
     ========================================================================== */
-    .bg-orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
-      will-change: transform;
-    }
+      .bg-orb {
+        position: fixed;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+        will-change: transform;
+      }
 
-    .bg-orb-1 {
-      width: 680px; height: 680px; top: -100px; left: -150px;
-      background: radial-gradient(circle at 38% 38%, rgba(var(--primary-rgb),0.15) 0%, transparent 66%);
-      filter: blur(60px);
-      animation: orbFloat1 24s ease-in-out infinite;
-    }
-    .bg-orb-2 {
-      width: 580px; height: 580px; bottom: -100px; right: -100px;
-      background: radial-gradient(circle at 62% 62%, rgba(var(--accent-rgb),0.15) 0%, transparent 66%);
-      filter: blur(60px);
-      animation: orbFloat2 30s ease-in-out infinite;
-    }
-    .bg-orb-3 {
-      width: 460px; height: 460px; top: 40%; left: 30%;
-      background: radial-gradient(circle at 50% 50%, rgba(var(--secondary-rgb),0.10) 0%, transparent 66%);
-      filter: blur(70px);
-      animation: orbFloat3 35s ease-in-out infinite alternate;
-    }
+      .bg-orb-1 {
+        width: 680px;
+        height: 680px;
+        top: -100px;
+        left: -150px;
+        background: radial-gradient(
+          circle at 38% 38%,
+          rgba(var(--primary-rgb), 0.15) 0%,
+          transparent 66%
+        );
+        filter: blur(60px);
+        animation: orbFloat1 24s ease-in-out infinite;
+      }
+      .bg-orb-2 {
+        width: 580px;
+        height: 580px;
+        bottom: -100px;
+        right: -100px;
+        background: radial-gradient(
+          circle at 62% 62%,
+          rgba(var(--accent-rgb), 0.15) 0%,
+          transparent 66%
+        );
+        filter: blur(60px);
+        animation: orbFloat2 30s ease-in-out infinite;
+      }
+      .bg-orb-3 {
+        width: 460px;
+        height: 460px;
+        top: 40%;
+        left: 30%;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(var(--secondary-rgb), 0.1) 0%,
+          transparent 66%
+        );
+        filter: blur(70px);
+        animation: orbFloat3 35s ease-in-out infinite alternate;
+      }
 
-    @keyframes orbFloat1 { 0%,100% { transform: translate(0px, 0px) scale(1); } 50% { transform: translate(120px,80px) scale(1.05); } }
-    @keyframes orbFloat2 { 0%,100% { transform: translate(0px, 0px) scale(1); } 50% { transform: translate(-100px,-120px) scale(0.95); } }
-    @keyframes orbFloat3 { 0%,100% { transform: translate(0px, 0px) scale(1); } 50% { transform: translate(80px,-60px) scale(1.1); } }
+      @keyframes orbFloat1 {
+        0%,
+        100% {
+          transform: translate(0px, 0px) scale(1);
+        }
+        50% {
+          transform: translate(120px, 80px) scale(1.05);
+        }
+      }
+      @keyframes orbFloat2 {
+        0%,
+        100% {
+          transform: translate(0px, 0px) scale(1);
+        }
+        50% {
+          transform: translate(-100px, -120px) scale(0.95);
+        }
+      }
+      @keyframes orbFloat3 {
+        0%,
+        100% {
+          transform: translate(0px, 0px) scale(1);
+        }
+        50% {
+          transform: translate(80px, -60px) scale(1.1);
+        }
+      }
 
-    /* ==========================================================================
+      /* ==========================================================================
        3. LIQUID GLASS — CARTES PREMIUM
     ========================================================================== */
-    .bg-darkCard {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 45%, rgba(255,255,255,0.04) 100%), rgba(10,10,15,0.4) !important;
-      backdrop-filter: blur(var(--blur-md)) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(var(--blur-md)) saturate(180%) !important;
-      border: 1px solid rgba(255,255,255,0.06) !important;
-      border-top: 1px solid rgba(255,255,255,0.15) !important;
-      border-left: 1px solid rgba(255,255,255,0.1) !important;
-      border-radius: var(--radius-lg) !important;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 20px rgba(255,255,255,0.02) !important;
-      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    .bg-darkCard::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-      opacity: 0.5; z-index: 2; transition: opacity 0.4s ease;
-    }
-    .bg-darkCard::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(110deg, rgba(255,255,255,0.06) 0%, transparent 60%);
-      pointer-events: none; z-index: 1;
-    }
-    .bg-darkCard:hover {
-      transform: translateY(-4px);
-      background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 100%), rgba(10,10,15,0.5) !important;
-      border-top: 1px solid rgba(255,255,255,0.25) !important;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.05) !important;
-    }
-    .bg-darkCard:hover::before { opacity: 1; }
+      .bg-darkCard {
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.02) 45%,
+            rgba(255, 255, 255, 0.04) 100%
+          ),
+          rgba(10, 10, 15, 0.4) !important;
+        backdrop-filter: blur(var(--blur-md)) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(var(--blur-md)) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: var(--radius-lg) !important;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          inset 0 0 20px rgba(255, 255, 255, 0.02) !important;
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      .bg-darkCard::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.4) 50%,
+          transparent 100%
+        );
+        opacity: 0.5;
+        z-index: 2;
+        transition: opacity 0.4s ease;
+      }
+      .bg-darkCard::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          110deg,
+          rgba(255, 255, 255, 0.06) 0%,
+          transparent 60%
+        );
+        pointer-events: none;
+        z-index: 1;
+      }
+      .bg-darkCard:hover {
+        transform: translateY(-4px);
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.03) 45%,
+            rgba(255, 255, 255, 0.06) 100%
+          ),
+          rgba(10, 10, 15, 0.5) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+        box-shadow:
+          0 30px 60px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+      }
+      .bg-darkCard:hover::before {
+        opacity: 1;
+      }
 
-    /* ==========================================================================
+      /* ==========================================================================
        4. TEXTES & GRADIENTS
     ========================================================================== */
-    .text-gradient {
-      background: linear-gradient(120deg, rgb(var(--primary-rgb)) 0%, rgb(var(--accent-rgb)) 50%, rgb(var(--secondary-rgb)) 100%);
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-      filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.3));
-    }
+      .text-gradient {
+        background: linear-gradient(
+          120deg,
+          rgb(var(--primary-rgb)) 0%,
+          rgb(var(--accent-rgb)) 50%,
+          rgb(var(--secondary-rgb)) 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.3));
+      }
 
-    .glass-pill {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); transition: all 0.3s ease;
-    }
-    .glass-pill:hover {
-      background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); transform: translateY(-2px);
-    }
+      .glass-pill {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        transition: all 0.3s ease;
+      }
+      .glass-pill:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
 
-    /* ==========================================================================
+      /* ==========================================================================
        5. SPLASH SCREEN (Animation d'intro cinématique)
     ========================================================================== */
-    #splash-screen {
-      position: fixed; inset: 0; z-index: 100000; background-color: #03030a; display: flex; align-items: center; justify-content: center; transition: background-color 0.8s ease;
-    }
-    html.light-mode #splash-screen { background-color: #faf7f2; }
+      #splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        background-color: #03030a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.8s ease;
+      }
+      html.light-mode #splash-screen {
+        background-color: #faf7f2;
+      }
 
-    .splash-text-container { display: flex; flex-direction: column; align-items: center; transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1); }
-    .splash-logo {
-      font-size: clamp(5rem, 18vw, 10rem); font-weight: 900; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.04em;
-      background: linear-gradient(120deg, rgb(var(--primary-rgb)) 0%, rgb(var(--accent-rgb)) 50%, rgb(var(--secondary-rgb)) 100%);
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-      filter: drop-shadow(0 0 40px rgba(var(--primary-rgb), 0.3)); line-height: 1;
-    }
-    .splash-subtitle {
-      margin-top: 1rem; font-size: clamp(0.7rem, 3vw, 1.2rem); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em;
-      color: #a1a1aa; opacity: 0; transform: translateY(15px); transition: opacity 0.8s ease, transform 0.8s ease; text-align: center;
-    }
+      .splash-text-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      .splash-logo {
+        font-size: clamp(5rem, 18vw, 10rem);
+        font-weight: 900;
+        font-family: "Space Grotesk", sans-serif;
+        letter-spacing: -0.04em;
+        background: linear-gradient(
+          120deg,
+          rgb(var(--primary-rgb)) 0%,
+          rgb(var(--accent-rgb)) 50%,
+          rgb(var(--secondary-rgb)) 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        filter: drop-shadow(0 0 40px rgba(var(--primary-rgb), 0.3));
+        line-height: 1;
+      }
+      .splash-subtitle {
+        margin-top: 1rem;
+        font-size: clamp(0.7rem, 3vw, 1.2rem);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #a1a1aa;
+        opacity: 0;
+        transform: translateY(15px);
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s ease;
+        text-align: center;
+      }
 
-    .splash-step-2 .splash-text-container { transform: translateY(-8vh); }
-    .splash-step-2 .splash-subtitle { opacity: 1; transform: translateY(0); }
-    .splash-step-3 { background-color: transparent !important; pointer-events: none; }
-    .splash-step-3 .splash-text-container { transform: translateY(-8vh) scale(40); opacity: 0; transition: transform 1.2s cubic-bezier(0.6, 0.04, 0.98, 0.33), opacity 0.8s ease 0.3s; }
-  </style>
-</head>
+      .splash-step-2 .splash-text-container {
+        transform: translateY(-8vh);
+      }
+      .splash-step-2 .splash-subtitle {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .splash-step-3 {
+        background-color: transparent !important;
+        pointer-events: none;
+      }
+      .splash-step-3 .splash-text-container {
+        transform: translateY(-8vh) scale(40);
+        opacity: 0;
+        transition:
+          transform 1.2s cubic-bezier(0.6, 0.04, 0.98, 0.33),
+          opacity 0.8s ease 0.3s;
+      }
+    </style>
+  </head>
 
-<body class="relative selection:bg-white/20 selection:text-white">
-
-  <!-- Splash Screen (Chargement d'intro) -->
-  <div id="splash-screen">
-    <div class="splash-text-container">
-      <div class="splash-logo">KSOS</div>
-      <div class="splash-subtitle">4 développeurs réunis en un même endroit</div>
+  <body class="relative selection:bg-white/20 selection:text-white">
+    <!-- Splash Screen (Chargement d'intro) -->
+    <div id="splash-screen">
+      <div class="splash-text-container">
+        <div class="splash-logo">KSOS</div>
+        <div class="splash-subtitle">
+          4 développeurs réunis en un même endroit
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Fond Animé -->
-  <div class="bg-orb bg-orb-1"></div>
-  <div class="bg-orb bg-orb-2"></div>
-  <div class="bg-orb bg-orb-3"></div>
+    <!-- Fond Animé -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
 
-  <!-- Languette Paramètres (En haut à droite) -->
-  <div id="settings-notch" class="fixed top-0 right-4 md:right-8 top-notch border-b border-l border-r border-white/20 px-5 py-2.5 rounded-b-2xl z-[9000] cursor-pointer hover:bg-white/10 transition-all duration-300 flex items-center gap-2 group shadow-lg hover:translate-y-1">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-white transition-all duration-500 transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-200 transition-colors hidden sm:block">Paramètres</span>
-  </div>
+    <!-- Languette Paramètres (En haut à droite) -->
+    <div
+      id="settings-notch"
+      class="fixed top-0 right-4 md:right-8 top-notch border-b border-l border-r border-white/20 px-5 py-2.5 rounded-b-2xl z-[9000] cursor-pointer hover:bg-white/10 transition-all duration-300 flex items-center gap-2 group shadow-lg hover:translate-y-1"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 text-gray-400 group-hover:text-white transition-all duration-500 transform group-hover:rotate-90"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2.5"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2.5"
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+      <span
+        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-200 transition-colors hidden sm:block"
+        >Paramètres</span
+      >
+    </div>
 
-  <!-- Modale Paramètres -->
-  <div id="settings-modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[99999] flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-400">
-    <div class="custom-modal border border-white/20 rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-90 relative transition-transform duration-400">
-      <button id="close-settings" class="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors">
-         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-      <h3 class="text-white text-2xl font-black mb-6 text-center tracking-wide font-display">Préférences</h3>
-      
-      <!-- Thèmes de Couleurs -->
-      <div class="flex flex-col bg-black/30 p-5 rounded-2xl border border-white/10 mb-4 shadow-inner gap-4">
-        <span class="text-white font-bold tracking-widest uppercase text-sm font-display">Thème Visuel 🎨</span>
-        <div class="grid grid-cols-2 gap-3" id="theme-selector">
-          <label class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-            <input type="radio" name="color-theme" value="default" class="hidden">
-            <div class="w-5 h-5 rounded-full bg-gradient-to-r from-[#ff5252] to-[#ff9a3c] transition-transform duration-200"></div>
-            <span class="text-[11px] font-bold text-gray-300 uppercase tracking-wide">Original</span>
-          </label>
-          <label class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-            <input type="radio" name="color-theme" value="cyberpunk" class="hidden">
-            <div class="w-5 h-5 rounded-full bg-gradient-to-r from-[#00f0ff] to-[#7000ff] transition-transform duration-200"></div>
-            <span class="text-[11px] font-bold text-gray-300 uppercase tracking-wide">Cyberpunk</span>
-          </label>
-          <label class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-            <input type="radio" name="color-theme" value="toxic" class="hidden">
-            <div class="w-5 h-5 rounded-full bg-gradient-to-r from-[#39ff14] to-[#00d4a0] transition-transform duration-200"></div>
-            <span class="text-[11px] font-bold text-gray-300 uppercase tracking-wide">Toxique</span>
-          </label>
-          <label class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-            <input type="radio" name="color-theme" value="synthwave" class="hidden">
-            <div class="w-5 h-5 rounded-full bg-gradient-to-r from-[#ff00ff] to-[#00ffff] transition-transform duration-200"></div>
-            <span class="text-[11px] font-bold text-gray-300 uppercase tracking-wide">Synthwave</span>
+    <!-- Modale Paramètres -->
+    <div
+      id="settings-modal-overlay"
+      class="fixed inset-0 bg-black/60 backdrop-blur-md z-[99999] flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-400"
+    >
+      <div
+        class="custom-modal border border-white/20 rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-90 relative transition-transform duration-400"
+      >
+        <button
+          id="close-settings"
+          class="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+        <h3
+          class="text-white text-2xl font-black mb-6 text-center tracking-wide font-display"
+        >
+          Préférences
+        </h3>
+
+        <!-- Thèmes de Couleurs -->
+        <div
+          class="flex flex-col bg-black/30 p-5 rounded-2xl border border-white/10 mb-4 shadow-inner gap-4"
+        >
+          <span
+            class="text-white font-bold tracking-widest uppercase text-sm font-display"
+            >Thème Visuel 🎨</span
+          >
+          <div class="grid grid-cols-2 gap-3" id="theme-selector">
+            <label
+              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              <input
+                type="radio"
+                name="color-theme"
+                value="default"
+                class="hidden"
+              />
+              <div
+                class="w-5 h-5 rounded-full bg-gradient-to-r from-[#ff5252] to-[#ff9a3c] transition-transform duration-200"
+              ></div>
+              <span
+                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
+                >Original</span
+              >
+            </label>
+            <label
+              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              <input
+                type="radio"
+                name="color-theme"
+                value="cyberpunk"
+                class="hidden"
+              />
+              <div
+                class="w-5 h-5 rounded-full bg-gradient-to-r from-[#00f0ff] to-[#7000ff] transition-transform duration-200"
+              ></div>
+              <span
+                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
+                >Cyberpunk</span
+              >
+            </label>
+            <label
+              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              <input
+                type="radio"
+                name="color-theme"
+                value="toxic"
+                class="hidden"
+              />
+              <div
+                class="w-5 h-5 rounded-full bg-gradient-to-r from-[#39ff14] to-[#00d4a0] transition-transform duration-200"
+              ></div>
+              <span
+                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
+                >Toxique</span
+              >
+            </label>
+            <label
+              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              <input
+                type="radio"
+                name="color-theme"
+                value="synthwave"
+                class="hidden"
+              />
+              <div
+                class="w-5 h-5 rounded-full bg-gradient-to-r from-[#ff00ff] to-[#00ffff] transition-transform duration-200"
+              ></div>
+              <span
+                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
+                >Synthwave</span
+              >
+            </label>
+          </div>
+        </div>
+
+        <!-- Mode Sombre / Clair -->
+        <div
+          class="flex items-center justify-between bg-black/30 p-5 rounded-2xl border border-white/10 shadow-inner"
+        >
+          <span
+            class="text-white font-bold tracking-widest uppercase text-sm font-display"
+            id="theme-label"
+            >Mode Sombre 🌙</span
+          >
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="theme-toggle" class="sr-only peer" />
+            <div
+              class="w-14 h-7 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all toggle-track"
+            ></div>
           </label>
         </div>
       </div>
-
-      <!-- Mode Sombre / Clair -->
-      <div class="flex items-center justify-between bg-black/30 p-5 rounded-2xl border border-white/10 shadow-inner">
-        <span class="text-white font-bold tracking-widest uppercase text-sm font-display" id="theme-label">Mode Sombre 🌙</span>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="theme-toggle" class="sr-only peer">
-          <div class="w-14 h-7 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all toggle-track"></div>
-        </label>
-      </div>
     </div>
-  </div>
 
-  <!-- Contenu Principal -->
-  <div id="main-content" class="relative z-10 w-full max-w-6xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-16 opacity-0">
-    
-    <!-- HEADER / HERO -->
-    <header class="flex flex-col items-center text-center gap-6">
-      <h1 class="text-6xl md:text-8xl font-black font-display text-gradient tracking-tighter drop-shadow-2xl">
-        KSOS
-      </h1>
-      <p class="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm max-w-lg leading-relaxed">
-        Collectif de développeurs <br/> Projets réunis en un seul endroit
-      </p>
+    <!-- Contenu Principal -->
+    <div
+      id="main-content"
+      class="relative z-10 w-full max-w-6xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-16 opacity-0"
+    >
+      <!-- HEADER / HERO -->
+      <header class="flex flex-col items-center text-center gap-6">
+        <h1
+          class="text-6xl md:text-8xl font-black font-display text-gradient tracking-tighter drop-shadow-2xl"
+        >
+          KSOS
+        </h1>
+        <p
+          class="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm max-w-lg leading-relaxed"
+        >
+          Collectif de développeurs <br />
+          Projets réunis en un seul endroit
+        </p>
 
-      <!-- Membres (Générés par JS) -->
-      <div class="flex flex-wrap justify-center gap-3 mt-4" id="members-container">
-      </div>
-    </header>
+        <!-- Membres (Générés par JS) -->
+        <div
+          class="flex flex-wrap justify-center gap-3 mt-4"
+          id="members-container"
+        ></div>
+      </header>
 
-    <!-- SECTION JEUX -->
-    <section class="flex flex-col gap-8">
-      <div class="flex items-center gap-6">
-        <h2 class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white">Jeux</h2>
-        <div class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6" id="games-container"></div>
-    </section>
+      <!-- SECTION JEUX -->
+      <section class="flex flex-col gap-8">
+        <div class="flex items-center gap-6">
+          <h2
+            class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white"
+          >
+            Jeux
+          </h2>
+          <div
+            class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"
+          ></div>
+        </div>
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6"
+          id="games-container"
+        ></div>
+      </section>
 
-    <!-- SECTION OUTILS & PROJETS PERSO -->
-    <section class="flex flex-col gap-8">
-      <div class="flex items-center gap-6">
-        <h2 class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white">Outils & Profils</h2>
-        <div class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6" id="projects-container"></div>
-    </section>
+      <!-- SECTION OUTILS & PROJETS PERSO -->
+      <section class="flex flex-col gap-8">
+        <div class="flex items-center gap-6">
+          <h2
+            class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white"
+          >
+            Outils & Profils
+          </h2>
+          <div
+            class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"
+          ></div>
+        </div>
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6"
+          id="projects-container"
+        ></div>
+      </section>
 
-    <!-- FOOTER -->
-    <footer class="mt-8 py-8 border-t border-white/10 text-center relative z-10">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-500 font-display mb-3">© <span id="current-year"></span> KSOS</p>
-      <div class="flex justify-center flex-wrap gap-4 text-xs font-bold text-gray-600" id="footer-links">
-      </div>
-    </footer>
+      <!-- FOOTER -->
+      <footer
+        class="mt-8 py-8 border-t border-white/10 text-center relative z-10"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-widest text-gray-500 font-display mb-3"
+        >
+          © <span id="current-year"></span> KSOS
+        </p>
+        <div
+          class="flex justify-center flex-wrap gap-4 text-xs font-bold text-gray-600"
+          id="footer-links"
+        ></div>
+      </footer>
+    </div>
 
-  </div>
+    <!-- SCRIPT MOTEUR DE DONNÉES & LOGIQUE UI -->
+    <script>
+      // ==========================================
+      // 1. BASE DE DONNÉES (Architecture API & Fallback)
+      // ==========================================
 
-  <!-- SCRIPT MOTEUR DE DONNÉES & LOGIQUE UI -->
-  <script>
-    // ==========================================
-    // 1. BASE DE DONNÉES (Architecture API & Fallback)
-    // ==========================================
-    
-    // Données de secours au cas où le fichier data.json n'est pas accessible (ex: lancement en local sans serveur)
-    const fallbackData = {
-      members: [
-        { name: "fall974", github: "fall974" },
-        { name: "AlbarKun222", github: "AlbarKun222" },
-        { name: "Infinity974", github: "Infinity974" },
-        { name: "florianm974", github: "florianm974" }
-      ],
-      games: [
-        {
-          title: "Le Petit Bac",
-          author: "fall974",
-          url: "https://fall974.github.io/Le-Petit-Bac-Jeux-vid-o-/",
-          github: "https://github.com/fall974/Le-Petit-Bac-Jeux-vid-o-",
-          desc: "Adaptation du célèbre jeu de société. Trouvez des mots commençant par la bonne lettre dans chaque catégorie avant la fin du temps imparti.",
-          icon: "🔤",
-          tagText: "Quiz",
-          techs: ["HTML", "CSS", "JavaScript"],
-          hoverClass: "group-hover:text-indigo-400",
-          badgeClass: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-        },
-        {
-          title: "VroomDle",
-          author: "AlbarKun222",
-          url: "https://AlbarKun222.github.io/VroomDle/",
-          github: "https://github.com/AlbarKun222/VroomDle",
-          desc: "Jeu de devinettes sur le thème de l'automobile, dans l'esprit Wordle. Identifiez la voiture mystère en un minimum d'essais.",
-          icon: "🏎️",
-          tagText: "Déduction",
-          techs: ["HTML", "CSS", "JavaScript"],
-          hoverClass: "group-hover:text-teal-400",
-          badgeClass: "bg-teal-500/10 text-teal-400 border-teal-500/20"
-        },
-        {
-          title: "Undercover",
-          author: "Infinity974",
-          url: "https://Infinity974.github.io/undercover/",
-          github: "https://github.com/Infinity974/undercover",
-          desc: "Adaptation du jeu Undercover. Chaque joueur reçoit un mot secret — les agents infiltrés doivent se fondre dans la masse sans se faire démasquer.",
-          icon: "🕵️",
-          tagText: "Party game",
-          techs: ["HTML", "CSS", "JavaScript"],
-          hoverClass: "group-hover:text-orange-400",
-          badgeClass: "bg-orange-500/10 text-orange-400 border-orange-500/20"
-        },
-        {
-          title: "Mamie Moule Maki",
-          author: "Infinity974",
-          url: "https://Infinity974.github.io/Mamie-Moule-Maki/",
-          github: "https://github.com/Infinity974/Mamie-Moule-Maki",
-          desc: "Le célèbre jeu du petit bac revisité. Mamie tire une lettre au sort, trouvez des mots originaux commençant par cette lettre avant la fin du temps imparti !",
-          icon: "👵",
-          tagText: "Arcade",
-          techs: ["HTML", "CSS", "JavaScript"],
-          hoverClass: "group-hover:text-red-400",
-          badgeClass: "bg-red-500/10 text-red-400 border-red-500/20"
+      // Données de secours au cas où le fichier data.json n'est pas accessible (ex: lancement en local sans serveur)
+      const fallbackData = {
+        members: [
+          { name: "fall974", github: "fall974" },
+          { name: "AlbarKun222", github: "AlbarKun222" },
+          { name: "Infinity974", github: "Infinity974" },
+          { name: "florianm974", github: "florianm974" },
+        ],
+        games: [
+          {
+            title: "Le Petit Bac",
+            author: "fall974",
+            url: "https://fall974.github.io/Le-Petit-Bac-Jeux-vid-o-/",
+            github: "https://github.com/fall974/Le-Petit-Bac-Jeux-vid-o-",
+            desc: "Adaptation du célèbre jeu de société. Trouvez des mots commençant par la bonne lettre dans chaque catégorie avant la fin du temps imparti.",
+            icon: "🔤",
+            tagText: "Quiz",
+            techs: ["HTML", "CSS", "JavaScript"],
+            hoverClass: "group-hover:text-indigo-400",
+            badgeClass: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+          },
+          {
+            title: "VroomDle",
+            author: "AlbarKun222",
+            url: "https://AlbarKun222.github.io/VroomDle/",
+            github: "https://github.com/AlbarKun222/VroomDle",
+            desc: "Jeu de devinettes sur le thème de l'automobile, dans l'esprit Wordle. Identifiez la voiture mystère en un minimum d'essais.",
+            icon: "🏎️",
+            tagText: "Déduction",
+            techs: ["HTML", "CSS", "JavaScript"],
+            hoverClass: "group-hover:text-teal-400",
+            badgeClass: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+          },
+          {
+            title: "Undercover",
+            author: "Infinity974",
+            url: "https://Infinity974.github.io/undercover/",
+            github: "https://github.com/Infinity974/undercover",
+            desc: "Adaptation du jeu Undercover. Chaque joueur reçoit un mot secret — les agents infiltrés doivent se fondre dans la masse sans se faire démasquer.",
+            icon: "🕵️",
+            tagText: "Party game",
+            techs: ["HTML", "CSS", "JavaScript"],
+            hoverClass: "group-hover:text-orange-400",
+            badgeClass: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+          },
+          {
+            title: "Mamie Moule Maki",
+            author: "Infinity974",
+            url: "https://Infinity974.github.io/Mamie-Moule-Maki/",
+            github: "https://github.com/Infinity974/Mamie-Moule-Maki",
+            desc: "Le célèbre jeu du petit bac revisité. Mamie tire une lettre au sort, trouvez des mots originaux commençant par cette lettre avant la fin du temps imparti !",
+            icon: "👵",
+            tagText: "Arcade",
+            techs: ["HTML", "CSS", "JavaScript"],
+            hoverClass: "group-hover:text-red-400",
+            badgeClass: "bg-red-500/10 text-red-400 border-red-500/20",
+          },
+        ],
+        projects: [
+          {
+            title: "Prompt Forge",
+            author: "florianm974",
+            url: "https://florianm974.github.io/prompt-forge/",
+            github: "https://github.com/florianm974/prompt-forge",
+            desc: "Outil de prompt engineering pour concevoir, tester et affiner des prompts IA de manière structurée et reproductible.",
+            icon: "⚙️",
+            tagText: "Outil IA",
+            techs: ["HTML", "CSS", "JavaScript"],
+            hoverClass: "group-hover:text-slate-400",
+            badgeClass: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+          },
+          {
+            title: "florian-links",
+            author: "florianm974",
+            url: "https://florianm974.github.io/florian-links/",
+            github: "https://github.com/florianm974/florian-links",
+            desc: "Page de liens personnalisée regroupant les profils, réseaux et ressources de Florian en un seul endroit.",
+            icon: "🔗",
+            tagText: "Link tree",
+            techs: ["HTML", "CSS", "JavaScript"],
+            hoverClass: "group-hover:text-blue-400",
+            badgeClass: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+          },
+        ],
+      };
+
+      // Fonction pour récupérer les données depuis le fichier data.json
+      // Fonction pour récupérer les données depuis le fichier data.json
+      async function fetchAppData() {
+        try {
+          // AJOUT DE L'ASTUCE ICI : On ajoute "?v=" suivi de l'heure exacte en millisecondes
+          const response = await fetch("./data.json?v=" + new Date().getTime());
+
+          if (!response.ok) throw new Error("Fichier introuvable");
+          return await response.json();
+        } catch (error) {
+          console.warn(
+            "Fichier data.json non trouvé. Utilisation des données de secours.",
+          );
+          return fallbackData;
         }
-      ],
-      projects: [
-        {
-          title: "Prompt Forge",
-          author: "florianm974",
-          url: "https://florianm974.github.io/prompt-forge/",
-          github: "https://github.com/florianm974/prompt-forge",
-          desc: "Outil de prompt engineering pour concevoir, tester et affiner des prompts IA de manière structurée et reproductible.",
-          icon: "⚙️",
-          tagText: "Outil IA",
-          techs: ["HTML", "CSS", "JavaScript"],
-          hoverClass: "group-hover:text-slate-400",
-          badgeClass: "bg-slate-500/10 text-slate-400 border-slate-500/20"
-        },
-        {
-          title: "florian-links",
-          author: "florianm974",
-          url: "https://florianm974.github.io/florian-links/",
-          github: "https://github.com/florianm974/florian-links",
-          desc: "Page de liens personnalisée regroupant les profils, réseaux et ressources de Florian en un seul endroit.",
-          icon: "🔗",
-          tagText: "Link tree",
-          techs: ["HTML", "CSS", "JavaScript"],
-          hoverClass: "group-hover:text-blue-400",
-          badgeClass: "bg-blue-500/10 text-blue-400 border-blue-500/20"
-        }
-      ]
-    };
-
-    // Fonction pour récupérer les données depuis le fichier data.json
-    // Fonction pour récupérer les données depuis le fichier data.json
-    async function fetchAppData() {
-      try {
-        // AJOUT DE L'ASTUCE ICI : On ajoute "?v=" suivi de l'heure exacte en millisecondes
-        const response = await fetch('./data.json?v=' + new Date().getTime());
-        
-        if (!response.ok) throw new Error("Fichier introuvable");
-        return await response.json();
-      } catch (error) {
-        console.warn("Fichier data.json non trouvé. Utilisation des données de secours.");
-        return fallbackData;
       }
-    }
 
-
-    // ==========================================
-    // 2. FONCTIONS DE GÉNÉRATION HTML
-    // ==========================================
-    function createCardHTML(item) {
-      return `
+      // ==========================================
+      // 2. FONCTIONS DE GÉNÉRATION HTML
+      // ==========================================
+      function createCardHTML(item) {
+        return `
         <div class="bg-darkCard group flex flex-col p-6 md:p-8 h-full">
           <div class="flex items-start justify-between mb-4 relative z-10">
             <div class="flex items-center gap-4">
@@ -542,7 +983,7 @@
             ${item.desc}
           </p>
           <div class="flex flex-wrap gap-2 mb-6 relative z-10">
-            ${item.techs.map(tech => `<span class="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider">${tech}</span>`).join('')}
+            ${item.techs.map((tech) => `<span class="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider">${tech}</span>`).join("")}
           </div>
           <div class="flex items-center justify-between relative z-10 pt-6 border-t border-white/5">
             <span class="px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${item.badgeClass}">${item.tagText}</span>
@@ -553,106 +994,129 @@
           </div>
         </div>
       `;
-    }
+      }
 
-    function createMemberBadge(member) {
-      return `
+      function createMemberBadge(member) {
+        return `
         <a href="https://github.com/${member.github}" target="_blank" rel="noopener noreferrer" class="glass-pill rounded-full flex items-center gap-3 pr-4 pl-1.5 py-1.5 group">
           <img src="https://github.com/${member.github}.png" alt="Avatar ${member.name}" loading="lazy" class="w-8 h-8 rounded-full border border-white/20 object-cover">
           <span class="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">${member.name}</span>
         </a>
       `;
-    }
-
-    // ==========================================
-    // 3. INITIALISATION & ÉVÉNEMENTS
-    // ==========================================
-    window.addEventListener('DOMContentLoaded', async () => {
-      
-      // 1. Récupération des données (soit via data.json, soit via le fallbackData)
-      const appData = await fetchAppData();
-
-      // 2. Injection dynamique des données dans le DOM
-      document.getElementById('members-container').innerHTML = appData.members.map(createMemberBadge).join('');
-      document.getElementById('games-container').innerHTML = appData.games.map(createCardHTML).join('');
-      document.getElementById('projects-container').innerHTML = appData.projects.map(createCardHTML).join('');
-      document.getElementById('current-year').textContent = new Date().getFullYear();
-      
-      const footerLinks = appData.members.map(m => `<a href="https://github.com/${m.github}" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">${m.name}</a>`);
-      document.getElementById('footer-links').innerHTML = footerLinks.join(' <span class="opacity-50">·</span> ');
-
-      // --- Logique du Menu Paramètres ---
-      const notch = document.getElementById('settings-notch');
-      const settingsOverlay = document.getElementById('settings-modal-overlay');
-      const closeSettings = document.getElementById('close-settings');
-      const themeToggle = document.getElementById('theme-toggle');
-      const themeLabel = document.getElementById('theme-label');
-      const themeRadios = document.querySelectorAll('input[name="color-theme"]');
-
-      notch.addEventListener('click', () => {
-        settingsOverlay.classList.remove('opacity-0', 'pointer-events-none');
-        settingsOverlay.classList.add('opacity-100', 'pointer-events-auto');
-        settingsOverlay.querySelector('.custom-modal').classList.add('scale-100');
-      });
-
-      closeSettings.addEventListener('click', () => {
-        settingsOverlay.classList.remove('opacity-100', 'pointer-events-auto');
-        settingsOverlay.classList.add('opacity-0', 'pointer-events-none');
-        settingsOverlay.querySelector('.custom-modal').classList.remove('scale-100');
-      });
-
-      if (localStorage.getItem('ksosTheme') === 'light') {
-        themeToggle.checked = true;
-        themeLabel.innerText = "Mode Clair ☀️";
       }
 
-      themeToggle.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          document.documentElement.classList.add('light-mode');
-          localStorage.setItem('ksosTheme', 'light');
-          themeLabel.innerText = "Mode Clair ☀️";
-        } else {
-          document.documentElement.classList.remove('light-mode');
-          localStorage.setItem('ksosTheme', 'dark');
-          themeLabel.innerText = "Mode Sombre 🌙";
-        }
-      });
+      // ==========================================
+      // 3. INITIALISATION & ÉVÉNEMENTS
+      // ==========================================
+      window.addEventListener("DOMContentLoaded", async () => {
+        // 1. Récupération des données (soit via data.json, soit via le fallbackData)
+        const appData = await fetchAppData();
 
-      const activeColorTheme = localStorage.getItem('ksosColorTheme') || 'default';
-      const activeRadio = document.querySelector(`input[name="color-theme"][value="${activeColorTheme}"]`);
-      if (activeRadio) activeRadio.checked = true;
+        // 2. Injection dynamique des données dans le DOM
+        document.getElementById("members-container").innerHTML = appData.members
+          .map(createMemberBadge)
+          .join("");
+        document.getElementById("games-container").innerHTML = appData.games
+          .map(createCardHTML)
+          .join("");
+        document.getElementById("projects-container").innerHTML =
+          appData.projects.map(createCardHTML).join("");
+        document.getElementById("current-year").textContent =
+          new Date().getFullYear();
 
-      themeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-          const selected = e.target.value;
-          document.documentElement.setAttribute('data-theme', selected);
-          localStorage.setItem('ksosColorTheme', selected);
+        const footerLinks = appData.members.map(
+          (m) =>
+            `<a href="https://github.com/${m.github}" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">${m.name}</a>`,
+        );
+        document.getElementById("footer-links").innerHTML = footerLinks.join(
+          ' <span class="opacity-50">·</span> ',
+        );
+
+        // --- Logique du Menu Paramètres ---
+        const notch = document.getElementById("settings-notch");
+        const settingsOverlay = document.getElementById(
+          "settings-modal-overlay",
+        );
+        const closeSettings = document.getElementById("close-settings");
+        const themeToggle = document.getElementById("theme-toggle");
+        const themeLabel = document.getElementById("theme-label");
+        const themeRadios = document.querySelectorAll(
+          'input[name="color-theme"]',
+        );
+
+        notch.addEventListener("click", () => {
+          settingsOverlay.classList.remove("opacity-0", "pointer-events-none");
+          settingsOverlay.classList.add("opacity-100", "pointer-events-auto");
+          settingsOverlay
+            .querySelector(".custom-modal")
+            .classList.add("scale-100");
         });
+
+        closeSettings.addEventListener("click", () => {
+          settingsOverlay.classList.remove(
+            "opacity-100",
+            "pointer-events-auto",
+          );
+          settingsOverlay.classList.add("opacity-0", "pointer-events-none");
+          settingsOverlay
+            .querySelector(".custom-modal")
+            .classList.remove("scale-100");
+        });
+
+        if (localStorage.getItem("ksosTheme") === "light") {
+          themeToggle.checked = true;
+          themeLabel.innerText = "Mode Clair ☀️";
+        }
+
+        themeToggle.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            document.documentElement.classList.add("light-mode");
+            localStorage.setItem("ksosTheme", "light");
+            themeLabel.innerText = "Mode Clair ☀️";
+          } else {
+            document.documentElement.classList.remove("light-mode");
+            localStorage.setItem("ksosTheme", "dark");
+            themeLabel.innerText = "Mode Sombre 🌙";
+          }
+        });
+
+        const activeColorTheme =
+          localStorage.getItem("ksosColorTheme") || "default";
+        const activeRadio = document.querySelector(
+          `input[name="color-theme"][value="${activeColorTheme}"]`,
+        );
+        if (activeRadio) activeRadio.checked = true;
+
+        themeRadios.forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            const selected = e.target.value;
+            document.documentElement.setAttribute("data-theme", selected);
+            localStorage.setItem("ksosColorTheme", selected);
+          });
+        });
+
+        // --- Animation d'introduction (Splash Screen) ---
+        const splashScreen = document.getElementById("splash-screen");
+        const mainContent = document.getElementById("main-content");
+
+        document.body.style.overflow = "hidden";
+        window.scrollTo(0, 0);
+
+        setTimeout(() => {
+          splashScreen.classList.add("splash-step-2");
+        }, 800);
+
+        setTimeout(() => {
+          splashScreen.classList.add("splash-step-3");
+          mainContent.classList.add("animate-fade-in");
+          mainContent.classList.remove("opacity-0");
+        }, 2600);
+
+        setTimeout(() => {
+          if (splashScreen) splashScreen.remove();
+          document.body.style.overflow = "";
+        }, 4000);
       });
-
-      // --- Animation d'introduction (Splash Screen) ---
-      const splashScreen = document.getElementById('splash-screen');
-      const mainContent = document.getElementById('main-content');
-      
-      document.body.style.overflow = 'hidden';
-      window.scrollTo(0, 0);
-
-      setTimeout(() => {
-        splashScreen.classList.add('splash-step-2');
-      }, 800);
-
-      setTimeout(() => {
-        splashScreen.classList.add('splash-step-3');
-        mainContent.classList.add('animate-fade-in');
-        mainContent.classList.remove('opacity-0');
-      }, 2600);
-
-      setTimeout(() => {
-        if (splashScreen) splashScreen.remove();
-        document.body.style.overflow = '';
-      }, 4000);
-
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
