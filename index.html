@@ -594,6 +594,33 @@
           transform 1.2s cubic-bezier(0.6, 0.04, 0.98, 0.33),
           opacity 0.8s ease 0.3s;
       }
+      /* Optimisations pour téléphones et tablettes */
+      @media (max-width: 768px) {
+        /* 1. On arrête les animations d'arrière-plan trop gourmandes */
+        .bg-orb {
+          animation: none !important;
+          filter: blur(40px) !important; /* Flou réduit */
+          opacity: 0.4 !important;
+        }
+
+        /* 2. On simplifie l'effet "verre" des cartes */
+        .bg-darkCard {
+          backdrop-filter: blur(
+            8px
+          ) !important; /* Moins de calcul pour le processeur */
+          background: rgba(
+            17,
+            18,
+            25,
+            0.9
+          ) !important; /* Fond plus sombre pour compenser */
+        }
+
+        /* 3. On réduit l'ombre du logo au démarrage */
+        #intro-ksos img {
+          filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5)) !important;
+        }
+      }
     </style>
   </head>
 
