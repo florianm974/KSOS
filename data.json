@@ -14,7 +14,7 @@
       "desc": "Le célèbre jeu d'ambiance adapté sur navigateur en multijoueur. Le Boss propose une phrase à trou, et les autres joueurs doivent la compléter avec leur réponse la plus décalée !",
       "icon": "🥥",
       "tagText": "Party game",
-      "techs": ["HTML", "Tailwind", "JS", "Firebase"],
+      "techs": ["HTML", "CSS", "JavaScript"],
       "hoverClass": "group-hover:text-fuchsia-400",
       "badgeClass": "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20"
     },
