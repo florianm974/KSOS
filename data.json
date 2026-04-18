@@ -7,6 +7,18 @@
   ],
   "games": [
     {
+      "title": "Blanc Manger Coco",
+      "author": "fall974",
+      "url": "https://fall974.github.io/Blanc-Manger-Coco/",
+      "github": "https://github.com/fall974/Blanc-Manger-Coco",
+      "desc": "Le célèbre jeu d'ambiance adapté sur navigateur en multijoueur. Le Boss propose une phrase à trou, et les autres joueurs doivent la compléter avec leur réponse la plus décalée !",
+      "icon": "🥥",
+      "tagText": "Party game",
+      "techs": ["HTML", "Tailwind", "JS", "Firebase"],
+      "hoverClass": "group-hover:text-fuchsia-400",
+      "badgeClass": "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20"
+    },
+    {
       "title": "Le Petit Bac",
       "author": "fall974",
       "url": "https://fall974.github.io/Le-Petit-Bac-Jeux-vid-o-/",
