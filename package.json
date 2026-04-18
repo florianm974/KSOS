@@ -1,0 +1,24 @@
+{
+  "name": "ksos",
+  "version": "1.0.0",
+  "description": "**Live →** [KSOS Portal](https://florianm974.github.io/KSOS/)",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/florianm974/KSOS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/florianm974/KSOS/issues"
+  },
+  "homepage": "https://github.com/florianm974/KSOS#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.2.2"
+  }
+}
