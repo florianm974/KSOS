@@ -53,6 +53,18 @@
       "techs": ["HTML", "CSS", "JavaScript"],
       "hoverClass": "group-hover:text-red-400",
       "badgeClass": "bg-red-500/10 text-red-400 border-red-500/20"
+    },
+    {
+      "title": "Top Ten",
+      "author": "Infinity974",
+      "url": "https://infinity974.github.io/topten/",
+      "github": "https://github.com/Infinity974/topten",
+      "desc": "Le jeu de l'échelle infernale en multijoueur temps réel. Recevez un numéro secret de 1 à 10, répondez au thème selon votre intensité, et laissez le Cap'ten tout classer dans le bon ordre !",
+      "icon": "🔟",
+      "tagText": "Party game",
+      "techs": ["HTML", "CSS", "JavaScript", "WebSockets"],
+      "hoverClass": "group-hover:text-cyan-400",
+      "badgeClass": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
     }
   ],
   "projects": [
