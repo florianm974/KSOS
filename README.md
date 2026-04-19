@@ -26,7 +26,7 @@ Le portail est divisé en deux grandes catégories :
 
 ### Projets Perso
 
-- 🔗 **florian-links** : Page de liens personnalisée regroupant profils et réseaux.
+- 🔗 **florian-links** : Page de liens personnalisée retestgroupant profils et réseaux.
 - ⚙️ **Prompt Forge** : Outil d'ingénierie et d'affinage de prompts IA.
 
 ## 🛠️ Technique & Fonctionnalités
