@@ -14,8 +14,8 @@ Collective portal for the KSOS dev group — games and personal projects in one 
 
 ## The Team
 
-| Member                                        | Projects |
-| --------------------------------------------- | -------- |
+| Member                                        |
+| --------------------------------------------- |
 | [fall974](https://github.com/fall974)         |
 | [AlbarKun222](https://github.com/AlbarKun222) |
 | [Infinity974](https://github.com/Infinity974) |
