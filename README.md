@@ -34,7 +34,7 @@ Collective portal for the KSOS dev group — games and personal projects in one 
 
 ### Personal Projects
 
-- **florian-links** — Personal link page, self-hosted with no dependencies
+- **florian-links** — Personal link page
 - **Prompt-Forge** — AI prompt builder for chatbots and image generation
 
 ---
@@ -72,7 +72,8 @@ No HTML or JavaScript editing required. Open `data.json` and add a new object to
 
 ## Stack
 
-- HTML / CSS / JavaScript — no framework, no build tools
+- HTML / CSS / JavaScript (vanilla, no frontend framework)
+- Tailwind CSS CLI (build of `style.css` from `src/input.css`)
 - Data: external `data.json` loaded via `fetch`
 - Hosted on GitHub Pages
 
