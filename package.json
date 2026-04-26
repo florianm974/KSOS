@@ -1,0 +1,30 @@
+{
+  "name": "ksos",
+  "version": "1.0.0",
+  "description": "KSOS collective portal for games and personal projects.",
+  "scripts": {
+    "dev": "tailwindcss -i ./src/input.css -o ./style.css --watch",
+    "build": "tailwindcss -i ./src/input.css -o ./style.css --minify",
+    "lint": "npm run lint:js && npm run lint:format",
+    "lint:js": "eslint app.js",
+    "lint:format": "prettier --check \"*.{js,html,css,json,md}\" \"src/**/*.css\"",
+    "format": "prettier --write \"*.{js,html,css,json,md}\" \"src/**/*.css\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/florianm974/KSOS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/florianm974/KSOS/issues"
+  },
+  "homepage": "https://github.com/florianm974/KSOS#readme",
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^3.4.1"
+  }
+}
