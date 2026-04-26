@@ -422,8 +422,8 @@ function parseItemDate(value) {
 
 function getItemTimestamp(item) {
   return (
-    parseItemDate(item.createdAt) ||
-    parseItemDate(item.updatedAt) ||
+    parseItemDate(item.updatedAt) || // Priorité 1 : Date de dernière modification GitHub
+    parseItemDate(item.createdAt) || // Priorité 2 : Date de création manuelle (fallback)
     parseItemDate(item.date)
   );
 }
