@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ==========================================================================
    1. VARIABLES & RESET
@@ -607,6 +609,13 @@ html.light-mode #global-controls button:hover {
   background-color: rgba(255, 255, 255, 1);
   border-color: rgba(0, 0, 0, 0.2);
   color: #111827;
+}
+
+/* In light mode, make hover states visible for interactive titles/links. */
+html.light-mode a.text-white:hover,
+html.light-mode .hover\:text-white:hover,
+html.light-mode .group:hover .group-hover\:text-white {
+  color: rgb(var(--primary-rgb)) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
