@@ -552,74 +552,60 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-#games-controls select,
-#games-controls input,
-#games-controls button,
-#projects-controls select,
-#projects-controls input,
-#projects-controls button {
+#global-controls select,
+#global-controls input,
+#global-controls button {
   color-scheme: dark;
   color: #f9fafb;
   background-color: rgba(0, 0, 0, 0.75);
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-#games-controls input::placeholder,
-#projects-controls input::placeholder {
+#global-controls input::placeholder {
   color: #9ca3af;
   opacity: 1;
 }
 
-#games-controls button:hover,
-#projects-controls button:hover {
+#global-controls button:hover {
   background-color: rgba(0, 0, 0, 0.9);
   border-color: rgba(255, 255, 255, 0.35);
   color: #ffffff;
 }
 
-#games-controls select option,
-#projects-controls select option {
+#global-controls select option {
   color: #ffffff;
   background-color: #0b0b0f;
 }
 
-#games-controls select option:checked,
-#projects-controls select option:checked {
+#global-controls select option:checked {
   color: #ffffff;
   background-color: rgb(var(--primary-rgb));
 }
 
-html.light-mode #games-controls select,
-html.light-mode #games-controls input,
-html.light-mode #games-controls button,
-html.light-mode #projects-controls select,
-html.light-mode #projects-controls input,
-html.light-mode #projects-controls button {
+html.light-mode #global-controls select,
+html.light-mode #global-controls input,
+html.light-mode #global-controls button {
   color-scheme: light;
   color: #111827;
   background-color: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.14);
 }
 
-html.light-mode #games-controls select option,
-html.light-mode #projects-controls select option {
+html.light-mode #global-controls select option {
   color: #111827;
   background-color: #ffffff;
 }
 
-html.light-mode #games-controls select option:checked,
-html.light-mode #projects-controls select option:checked {
+html.light-mode #global-controls select option:checked {
   color: #ffffff;
   background-color: #1d4ed8;
 }
 
-html.light-mode #games-controls input::placeholder,
-html.light-mode #projects-controls input::placeholder {
+html.light-mode #global-controls input::placeholder {
   color: #6b7280;
 }
 
-html.light-mode #games-controls button:hover,
-html.light-mode #projects-controls button:hover {
+html.light-mode #global-controls button:hover {
   background-color: rgba(255, 255, 255, 1);
   border-color: rgba(0, 0, 0, 0.2);
   color: #111827;

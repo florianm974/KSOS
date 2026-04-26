@@ -27,30 +27,22 @@ window.addEventListener("DOMContentLoaded", async () => {
   const footerLinks = document.getElementById("footer-links");
   const currentYear = document.getElementById("current-year");
 
-  const gamesSortSelect = document.getElementById("games-sort");
-  const gamesAuthorFilterSelect = document.getElementById(
-    "games-author-filter",
+  // --- Contrôles globaux ---
+  const globalSortSelect = document.getElementById("global-sort");
+  const globalAuthorFilterSelect = document.getElementById(
+    "global-author-filter",
   );
-  const gamesOrderToggle = document.getElementById("games-order-toggle");
-  const gamesRecentNote = document.getElementById("games-recent-note");
-  const gamesResultsCount = document.getElementById("games-results-count");
-  const gamesSearchInput = document.getElementById("games-search");
-  const gamesResetFiltersButton = document.getElementById(
-    "games-reset-filters",
+  const globalSearchInput = document.getElementById("global-search");
+  const globalOrderToggle = document.getElementById("global-order-toggle");
+  const globalResetFiltersButton = document.getElementById(
+    "global-reset-filters",
   );
 
-  const projectsSortSelect = document.getElementById("projects-sort");
-  const projectsAuthorFilterSelect = document.getElementById(
-    "projects-author-filter",
-  );
-  const projectsOrderToggle = document.getElementById("projects-order-toggle");
+  const gamesRecentNote = document.getElementById("games-recent-note");
+  const gamesResultsCount = document.getElementById("games-results-count");
   const projectsRecentNote = document.getElementById("projects-recent-note");
   const projectsResultsCount = document.getElementById(
     "projects-results-count",
-  );
-  const projectsSearchInput = document.getElementById("projects-search");
-  const projectsResetFiltersButton = document.getElementById(
-    "projects-reset-filters",
   );
 
   if (
@@ -66,50 +58,46 @@ window.addEventListener("DOMContentLoaded", async () => {
   currentYear.textContent = String(new Date().getFullYear());
 
   let cachedAppData = null;
-  let gamesSortCriteria = localStorage.getItem("ksosGamesSort") || "default";
-  let gamesSortOrder = localStorage.getItem("ksosGamesOrder") || "asc";
-  let gamesAuthorFilter = localStorage.getItem("ksosGamesAuthor") || "all";
-  let gamesSearchQuery = localStorage.getItem("ksosGamesSearch") || "";
 
-  let projectsSortCriteria =
-    localStorage.getItem("ksosProjectsSort") || "default";
-  let projectsSortOrder = localStorage.getItem("ksosProjectsOrder") || "asc";
-  let projectsAuthorFilter =
-    localStorage.getItem("ksosProjectsAuthor") || "all";
-  let projectsSearchQuery = localStorage.getItem("ksosProjectsSearch") || "";
+  // État global unique
+  let sortCriteria = localStorage.getItem("ksosSort") || "default";
+  let sortOrder = localStorage.getItem("ksosOrder") || "asc";
+  let authorFilter = localStorage.getItem("ksosAuthor") || "all";
+  let searchQuery = localStorage.getItem("ksosSearch") || "";
 
-  let gamesControlsBound = false;
-  let projectsControlsBound = false;
+  let controlsBound = false;
 
   const updateOrderToggleLabel = () => {
-    if (!gamesOrderToggle) return;
-    const isDesc = gamesSortOrder === "desc";
-    gamesOrderToggle.textContent = isDesc ? "Ordre: Desc" : "Ordre: Asc";
-    gamesOrderToggle.setAttribute("aria-pressed", String(isDesc));
+    if (!globalOrderToggle) return;
+    const isDesc = sortOrder === "desc";
+    globalOrderToggle.textContent = isDesc ? "Ordre: Desc" : "Ordre: Asc";
+    globalOrderToggle.setAttribute("aria-pressed", String(isDesc));
   };
 
-  const renderGames = () => {
+  // Rend les deux sections avec le même filtre
+  const renderAll = () => {
     if (!cachedAppData) return;
 
+    const criteria = globalSortSelect?.value || sortCriteria;
+    const filterValue = globalAuthorFilterSelect?.value || authorFilter;
+    const query = globalSearchInput?.value ?? searchQuery;
+
+    // --- Jeux ---
     const allGames = Array.isArray(cachedAppData.games)
       ? cachedAppData.games
       : [];
-    const criteria = gamesSortSelect?.value || gamesSortCriteria;
-    const filterValue = gamesAuthorFilterSelect?.value || gamesAuthorFilter;
-    const searchQuery = gamesSearchInput?.value ?? gamesSearchQuery;
-
     const processedGames = sortAndFilterItems(
       allGames,
       criteria,
-      gamesSortOrder,
+      sortOrder,
       filterValue,
-      searchQuery,
+      query,
     );
 
     clearElement(gamesContainer);
     if (processedGames.length === 0) {
       gamesContainer.appendChild(
-        createEmptyStateCard("Aucun jeu ne correspond a votre recherche."),
+        createEmptyStateCard("Aucun jeu ne correspond à votre recherche."),
       );
     } else {
       processedGames.forEach((game) =>
@@ -118,49 +106,35 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (gamesRecentNote) {
-      const hasDates = allGames.some((game) => getItemTimestamp(game) !== null);
-      const showNote = criteria === "recent" && !hasDates;
-      gamesRecentNote.classList.toggle("hidden", !showNote);
+      const hasDates = allGames.some((g) => getItemTimestamp(g) !== null);
+      gamesRecentNote.classList.toggle(
+        "hidden",
+        !(criteria === "recent" && !hasDates),
+      );
     }
-
     if (gamesResultsCount) {
       gamesResultsCount.textContent = buildResultsLabel(
         processedGames.length,
         "jeu",
       );
     }
-  };
 
-  const updateProjectsOrderToggleLabel = () => {
-    if (!projectsOrderToggle) return;
-    const isDesc = projectsSortOrder === "desc";
-    projectsOrderToggle.textContent = isDesc ? "Ordre: Desc" : "Ordre: Asc";
-    projectsOrderToggle.setAttribute("aria-pressed", String(isDesc));
-  };
-
-  const renderProjects = () => {
-    if (!cachedAppData) return;
-
+    // --- Projets ---
     const allProjects = Array.isArray(cachedAppData.projects)
       ? cachedAppData.projects
       : [];
-    const criteria = projectsSortSelect?.value || projectsSortCriteria;
-    const filterValue =
-      projectsAuthorFilterSelect?.value || projectsAuthorFilter;
-    const searchQuery = projectsSearchInput?.value ?? projectsSearchQuery;
-
     const processedProjects = sortAndFilterItems(
       allProjects,
       criteria,
-      projectsSortOrder,
+      sortOrder,
       filterValue,
-      searchQuery,
+      query,
     );
 
     clearElement(projectsContainer);
     if (processedProjects.length === 0) {
       projectsContainer.appendChild(
-        createEmptyStateCard("Aucun projet ne correspond a votre recherche."),
+        createEmptyStateCard("Aucun projet ne correspond à votre recherche."),
       );
     } else {
       processedProjects.forEach((project) =>
@@ -169,13 +143,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (projectsRecentNote) {
-      const hasDates = allProjects.some(
-        (project) => getItemTimestamp(project) !== null,
+      const hasDates = allProjects.some((p) => getItemTimestamp(p) !== null);
+      projectsRecentNote.classList.toggle(
+        "hidden",
+        !(criteria === "recent" && !hasDates),
       );
-      const showNote = criteria === "recent" && !hasDates;
-      projectsRecentNote.classList.toggle("hidden", !showNote);
     }
-
     if (projectsResultsCount) {
       projectsResultsCount.textContent = buildResultsLabel(
         processedProjects.length,
@@ -184,193 +157,102 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  const setupGamesControls = (appData) => {
-    if (!gamesSortSelect || !gamesAuthorFilterSelect || !gamesOrderToggle)
+  const setupControls = (appData) => {
+    if (!globalSortSelect || !globalAuthorFilterSelect || !globalOrderToggle)
       return;
 
-    const availableAuthors = buildAuthorOptions(appData, "games");
-    clearElement(gamesAuthorFilterSelect);
+    // Construire les options d'auteurs à partir des deux collections
+    const allAuthors = buildAuthorOptions(
+      {
+        members: appData.members,
+        games: [...(appData.games || []), ...(appData.projects || [])],
+      },
+      "games",
+    );
+
+    clearElement(globalAuthorFilterSelect);
     const allOption = document.createElement("option");
     allOption.value = "all";
     allOption.textContent = "Tous";
-    gamesAuthorFilterSelect.appendChild(allOption);
+    globalAuthorFilterSelect.appendChild(allOption);
 
-    availableAuthors.forEach((author) => {
+    allAuthors.forEach((author) => {
       const option = document.createElement("option");
       option.value = author.key;
       option.textContent = author.label;
-      gamesAuthorFilterSelect.appendChild(option);
+      globalAuthorFilterSelect.appendChild(option);
     });
 
-    if (gamesSortSelect.querySelector(`option[value="${gamesSortCriteria}"]`)) {
-      gamesSortSelect.value = gamesSortCriteria;
+    // Restaurer l'état sauvegardé
+    if (globalSortSelect.querySelector(`option[value="${sortCriteria}"]`)) {
+      globalSortSelect.value = sortCriteria;
     } else {
-      gamesSortCriteria = "default";
-      gamesSortSelect.value = "default";
+      sortCriteria = "default";
+      globalSortSelect.value = "default";
     }
 
     if (
-      gamesAuthorFilterSelect.querySelector(
-        `option[value="${gamesAuthorFilter}"]`,
-      )
+      globalAuthorFilterSelect.querySelector(`option[value="${authorFilter}"]`)
     ) {
-      gamesAuthorFilterSelect.value = gamesAuthorFilter;
+      globalAuthorFilterSelect.value = authorFilter;
     } else {
-      gamesAuthorFilter = "all";
-      gamesAuthorFilterSelect.value = "all";
+      authorFilter = "all";
+      globalAuthorFilterSelect.value = "all";
     }
 
-    if (gamesSearchInput) gamesSearchInput.value = gamesSearchQuery;
+    if (globalSearchInput) globalSearchInput.value = searchQuery;
 
     updateOrderToggleLabel();
 
-    if (!gamesControlsBound) {
-      gamesSortSelect.addEventListener("change", (event) => {
-        gamesSortCriteria = event.target.value;
-        localStorage.setItem("ksosGamesSort", gamesSortCriteria);
-        renderGames();
+    if (!controlsBound) {
+      globalSortSelect.addEventListener("change", (e) => {
+        sortCriteria = e.target.value;
+        localStorage.setItem("ksosSort", sortCriteria);
+        renderAll();
       });
 
-      gamesAuthorFilterSelect.addEventListener("change", (event) => {
-        gamesAuthorFilter = event.target.value;
-        localStorage.setItem("ksosGamesAuthor", gamesAuthorFilter);
-        renderGames();
+      globalAuthorFilterSelect.addEventListener("change", (e) => {
+        authorFilter = e.target.value;
+        localStorage.setItem("ksosAuthor", authorFilter);
+        renderAll();
       });
 
-      if (gamesSearchInput) {
-        gamesSearchInput.addEventListener("input", (event) => {
-          gamesSearchQuery = event.target.value;
-          localStorage.setItem("ksosGamesSearch", gamesSearchQuery);
-          renderGames();
+      if (globalSearchInput) {
+        globalSearchInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value;
+          localStorage.setItem("ksosSearch", searchQuery);
+          renderAll();
         });
       }
 
-      gamesOrderToggle.addEventListener("click", () => {
-        gamesSortOrder = gamesSortOrder === "asc" ? "desc" : "asc";
-        localStorage.setItem("ksosGamesOrder", gamesSortOrder);
+      globalOrderToggle.addEventListener("click", () => {
+        sortOrder = sortOrder === "asc" ? "desc" : "asc";
+        localStorage.setItem("ksosOrder", sortOrder);
         updateOrderToggleLabel();
-        renderGames();
+        renderAll();
       });
 
-      if (gamesResetFiltersButton) {
-        gamesResetFiltersButton.addEventListener("click", () => {
-          gamesSortCriteria = "default";
-          gamesSortOrder = "asc";
-          gamesAuthorFilter = "all";
-          gamesSearchQuery = "";
+      if (globalResetFiltersButton) {
+        globalResetFiltersButton.addEventListener("click", () => {
+          sortCriteria = "default";
+          sortOrder = "asc";
+          authorFilter = "all";
+          searchQuery = "";
 
-          localStorage.setItem("ksosGamesSort", gamesSortCriteria);
-          localStorage.setItem("ksosGamesOrder", gamesSortOrder);
-          localStorage.setItem("ksosGamesAuthor", gamesAuthorFilter);
-          localStorage.setItem("ksosGamesSearch", gamesSearchQuery);
+          localStorage.setItem("ksosSort", sortCriteria);
+          localStorage.setItem("ksosOrder", sortOrder);
+          localStorage.setItem("ksosAuthor", authorFilter);
+          localStorage.setItem("ksosSearch", searchQuery);
 
-          gamesSortSelect.value = gamesSortCriteria;
-          gamesAuthorFilterSelect.value = gamesAuthorFilter;
-          if (gamesSearchInput) gamesSearchInput.value = "";
+          globalSortSelect.value = "default";
+          globalAuthorFilterSelect.value = "all";
+          if (globalSearchInput) globalSearchInput.value = "";
           updateOrderToggleLabel();
-          renderGames();
-        });
-      }
-      gamesControlsBound = true;
-    }
-  };
-
-  const setupProjectsControls = (appData) => {
-    if (
-      !projectsSortSelect ||
-      !projectsAuthorFilterSelect ||
-      !projectsOrderToggle
-    )
-      return;
-
-    const availableAuthors = buildAuthorOptions(appData, "projects");
-    clearElement(projectsAuthorFilterSelect);
-    const allOption = document.createElement("option");
-    allOption.value = "all";
-    allOption.textContent = "Tous";
-    projectsAuthorFilterSelect.appendChild(allOption);
-
-    availableAuthors.forEach((author) => {
-      const option = document.createElement("option");
-      option.value = author.key;
-      option.textContent = author.label;
-      projectsAuthorFilterSelect.appendChild(option);
-    });
-
-    if (
-      projectsSortSelect.querySelector(
-        `option[value="${projectsSortCriteria}"]`,
-      )
-    ) {
-      projectsSortSelect.value = projectsSortCriteria;
-    } else {
-      projectsSortCriteria = "default";
-      projectsSortSelect.value = "default";
-    }
-
-    if (
-      projectsAuthorFilterSelect.querySelector(
-        `option[value="${projectsAuthorFilter}"]`,
-      )
-    ) {
-      projectsAuthorFilterSelect.value = projectsAuthorFilter;
-    } else {
-      projectsAuthorFilter = "all";
-      projectsAuthorFilterSelect.value = "all";
-    }
-
-    if (projectsSearchInput) projectsSearchInput.value = projectsSearchQuery;
-
-    updateProjectsOrderToggleLabel();
-
-    if (!projectsControlsBound) {
-      projectsSortSelect.addEventListener("change", (event) => {
-        projectsSortCriteria = event.target.value;
-        localStorage.setItem("ksosProjectsSort", projectsSortCriteria);
-        renderProjects();
-      });
-
-      projectsAuthorFilterSelect.addEventListener("change", (event) => {
-        projectsAuthorFilter = event.target.value;
-        localStorage.setItem("ksosProjectsAuthor", projectsAuthorFilter);
-        renderProjects();
-      });
-
-      if (projectsSearchInput) {
-        projectsSearchInput.addEventListener("input", (event) => {
-          projectsSearchQuery = event.target.value;
-          localStorage.setItem("ksosProjectsSearch", projectsSearchQuery);
-          renderProjects();
+          renderAll();
         });
       }
 
-      projectsOrderToggle.addEventListener("click", () => {
-        projectsSortOrder = projectsSortOrder === "asc" ? "desc" : "asc";
-        localStorage.setItem("ksosProjectsOrder", projectsSortOrder);
-        updateProjectsOrderToggleLabel();
-        renderProjects();
-      });
-
-      if (projectsResetFiltersButton) {
-        projectsResetFiltersButton.addEventListener("click", () => {
-          projectsSortCriteria = "default";
-          projectsSortOrder = "asc";
-          projectsAuthorFilter = "all";
-          projectsSearchQuery = "";
-
-          localStorage.setItem("ksosProjectsSort", projectsSortCriteria);
-          localStorage.setItem("ksosProjectsOrder", projectsSortOrder);
-          localStorage.setItem("ksosProjectsAuthor", projectsAuthorFilter);
-          localStorage.setItem("ksosProjectsSearch", projectsSearchQuery);
-
-          projectsSortSelect.value = projectsSortCriteria;
-          projectsAuthorFilterSelect.value = projectsAuthorFilter;
-          if (projectsSearchInput) projectsSearchInput.value = "";
-          updateProjectsOrderToggleLabel();
-          renderProjects();
-        });
-      }
-      projectsControlsBound = true;
+      controlsBound = true;
     }
   };
 
@@ -385,11 +267,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       membersContainer.appendChild(createMemberBadgeElement(member));
     });
 
-    setupGamesControls(cachedAppData);
-    renderGames();
-
-    setupProjectsControls(cachedAppData);
-    renderProjects();
+    setupControls(cachedAppData);
+    renderAll();
 
     renderFooterLinks(cachedAppData.members || [], footerLinks);
   };
