@@ -12,30 +12,6 @@ Collective portal for the KSOS dev group — games and personal projects in one 
 
 ---
 
-## Local Development
-
-```bash
-npm install
-npm run dev
-```
-
-## Quality Checks
-
-```bash
-npm run lint
-npm run build
-```
-
-## Technical Notes
-
-- Data rendering is done with safe DOM APIs (no direct HTML injection from JSON content).
-- Settings modal includes dialog semantics, focus trap, Escape/overlay close, and focus restore.
-- Splash intro supports skip, is auto-disabled for reduced-motion users, and is shown once per user.
-- Member avatars use lazy loading with a local SVG fallback when GitHub image loading fails.
-- CI workflow runs install, build, and lint checks on push and pull requests.
-
----
-
 ## The Team
 
 | Member                                        |
@@ -50,5 +26,3 @@ npm run build
 ## License
 
 MIT — see [LICENSE](LICENSE)
-# KSOS
-# KSOS
