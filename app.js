@@ -254,13 +254,20 @@ function createCardElement(item) {
   headerLeft.appendChild(titleWrapper);
   header.appendChild(headerLeft);
 
-  const itemTimestamp = getItemTimestamp(item);
+  const itemTimestamp = getItemTimestamp(item); // Date à afficher (mise à jour via GitHub)
+  const createdTimestamp = parseItemDate(item.createdAt); // Vraie date de création statique
+
   if (itemTimestamp !== null) {
     const datePill = document.createElement("span");
-    const isNew = Date.now() - itemTimestamp <= 30 * 24 * 60 * 60 * 1000;
+
+    // On vérifie si le projet vient d'être CRÉÉ, et non s'il a juste été mis à jour
+    const baseTimestampForNew = createdTimestamp || itemTimestamp;
+    const isNew = Date.now() - baseTimestampForNew <= 30 * 24 * 60 * 60 * 1000;
+
     datePill.className = isNew
       ? "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
       : "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10";
+
     datePill.textContent = isNew
       ? "Nouveau"
       : new Intl.DateTimeFormat("fr-FR", {
