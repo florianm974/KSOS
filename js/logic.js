@@ -6,13 +6,31 @@ export function parseItemDate(value) {
   return Number.isNaN(timestamp) ? null : timestamp;
 }
 
+// 7 jours en millisecondes
+const NEW_ITEM_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function isItemNew(item) {
+  const created = parseItemDate(item.createdAt);
+  if (created === null) return false;
+  return Date.now() - created <= NEW_ITEM_THRESHOLD_MS;
+}
+
 export function getItemTimestamp(item) {
-  // Correction ici : updatedAt (GitHub) en priorité
-  return (
-    parseItemDate(item.updatedAt) ||
-    parseItemDate(item.createdAt) ||
-    parseItemDate(item.date)
-  );
+  const createdTime = parseItemDate(item.createdAt);
+  const updatedTime = parseItemDate(item.updatedAt);
+
+  // Si l'item est nouveau (< 7 jours) → afficher createdAt
+  if (isItemNew(item) && createdTime !== null) {
+    return createdTime;
+  }
+
+  // Si l'item est vieux (>= 7 jours) → afficher updatedAt (dernier push)
+  if (updatedTime !== null) {
+    return updatedTime;
+  }
+
+  // Fallback : createdAt
+  return createdTime || parseItemDate(item.date);
 }
 
 export function normalizeAuthorKey(author) {

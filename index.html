@@ -60,10 +60,13 @@
     <!-- Splash Screen (Chargement d'intro) -->
     <div id="splash-screen">
       <div class="splash-text-container">
-        <div class="splash-logo">KSOS</div>
+        <div class="splash-logo-wrapper">
+          <div class="splash-logo">KSOS</div>
+        </div>
         <div class="splash-subtitle">
           4 développeurs réunis en un même endroit
         </div>
+        <div class="splash-progress"></div>
       </div>
       <button id="skip-splash" type="button" class="skip-splash-button">
         Passer l'intro
@@ -400,10 +403,7 @@
           id="games-results-count"
           class="text-xs font-bold uppercase tracking-wider text-gray-400"
         ></p>
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6"
-          id="games-container"
-        ></div>
+        <div class="bento-grid" id="games-container"></div>
       </section>
 
       <!-- SECTION OUTILS & PROJETS PERSO -->

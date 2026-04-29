@@ -1,6 +1,6 @@
 // js/dom.js
 
-import { getItemTimestamp, parseItemDate } from "./logic.js";
+import { getItemTimestamp, parseItemDate, isItemNew } from "./logic.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const AVATAR_FALLBACK =
@@ -88,18 +88,16 @@ export function createCardElement(item) {
 
   // Correction ici : On sépare la date d'affichage (updatedAt) de la date de création (createdAt)
   const itemTimestamp = getItemTimestamp(item);
-  const createdTimestamp = parseItemDate(item.createdAt);
 
   if (itemTimestamp !== null) {
     const datePill = document.createElement("span");
-    const baseTimestampForNew = createdTimestamp || itemTimestamp;
-    const isNew = Date.now() - baseTimestampForNew <= 30 * 24 * 60 * 60 * 1000;
+    const isNewItem = isItemNew(item);
 
-    datePill.className = isNew
+    datePill.className = isNewItem
       ? "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
       : "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10";
 
-    datePill.textContent = isNew
+    datePill.textContent = isNewItem
       ? "Nouveau"
       : new Intl.DateTimeFormat("fr-FR", {
           day: "2-digit",

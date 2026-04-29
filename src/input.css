@@ -15,24 +15,182 @@
   --radius-sm: 14px;
   --radius-lg: 28px;
 }
-
+/* ── CYBERPUNK ─────────────────────────────────── */
 [data-theme="cyberpunk"] {
   --primary-rgb: 0, 240, 255;
   --secondary-rgb: 112, 0, 255;
   --success-rgb: 57, 255, 20;
   --accent-rgb: 255, 0, 128;
+  --bg-dark: #04000f;
+  --blur-md: 28px;
+  --card-tint: rgba(0, 240, 255, 0.03);
 }
+
+[data-theme="cyberpunk"] body,
+[data-theme="cyberpunk"] html {
+  background-color: #04000f;
+}
+
+[data-theme="cyberpunk"] .bg-orb-1 {
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(0, 240, 255, 0.18) 0%,
+    transparent 65%
+  );
+  animation-duration: 18s;
+}
+[data-theme="cyberpunk"] .bg-orb-2 {
+  background: radial-gradient(
+    circle at 65% 65%,
+    rgba(112, 0, 255, 0.2) 0%,
+    transparent 65%
+  );
+}
+[data-theme="cyberpunk"] .bg-orb-3 {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 0, 128, 0.1) 0%,
+    transparent 65%
+  );
+}
+
+/* Scan line subtil sur les cartes */
+[data-theme="cyberpunk"] .bg-darkCard::after {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 240, 255, 0.015) 2px,
+      rgba(0, 240, 255, 0.015) 4px
+    ),
+    radial-gradient(
+      ellipse at 15% 10%,
+      rgba(0, 240, 255, 0.06) 0%,
+      transparent 60%
+    );
+}
+
+[data-theme="cyberpunk"] .bg-darkCard:hover {
+  box-shadow:
+    0 0 0 1px rgba(0, 240, 255, 0.4),
+    0 0 20px rgba(0, 240, 255, 0.12),
+    inset 0 1px 0 rgba(0, 240, 255, 0.2),
+    0 35px 70px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ── TOXIC ─────────────────────────────────────── */
 [data-theme="toxic"] {
   --primary-rgb: 57, 255, 20;
   --secondary-rgb: 0, 212, 160;
   --success-rgb: 0, 240, 255;
   --accent-rgb: 168, 255, 0;
+  --bg-dark: #000d03;
+  --blur-md: 32px;
 }
+
+[data-theme="toxic"] body,
+[data-theme="toxic"] html {
+  background-color: #000d03;
+}
+
+[data-theme="toxic"] .bg-orb-1 {
+  background: radial-gradient(
+    circle at 38% 38%,
+    rgba(57, 255, 20, 0.15) 0%,
+    transparent 65%
+  );
+}
+[data-theme="toxic"] .bg-orb-2 {
+  background: radial-gradient(
+    circle at 62% 62%,
+    rgba(0, 212, 160, 0.18) 0%,
+    transparent 65%
+  );
+}
+[data-theme="toxic"] .bg-orb-3 {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(168, 255, 0, 0.08) 0%,
+    transparent 60%
+  );
+}
+
+[data-theme="toxic"] .bg-darkCard:hover {
+  box-shadow:
+    0 0 0 1px rgba(57, 255, 20, 0.35),
+    0 0 25px rgba(57, 255, 20, 0.1),
+    inset 0 1px 0 rgba(57, 255, 20, 0.15),
+    0 35px 70px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ── SYNTHWAVE ──────────────────────────────────── */
 [data-theme="synthwave"] {
   --primary-rgb: 255, 0, 255;
   --secondary-rgb: 0, 255, 255;
   --success-rgb: 255, 255, 0;
   --accent-rgb: 138, 43, 226;
+  --bg-dark: #0d0015;
+  --blur-md: 40px;
+}
+
+[data-theme="synthwave"] body,
+[data-theme="synthwave"] html {
+  background-color: #0d0015;
+}
+
+[data-theme="synthwave"] .bg-orb-1 {
+  background: radial-gradient(
+    circle at 30% 60%,
+    rgba(255, 0, 255, 0.2) 0%,
+    transparent 60%
+  );
+  animation-duration: 28s;
+}
+[data-theme="synthwave"] .bg-orb-2 {
+  background: radial-gradient(
+    circle at 70% 30%,
+    rgba(0, 255, 255, 0.18) 0%,
+    transparent 60%
+  );
+}
+[data-theme="synthwave"] .bg-orb-3 {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(138, 43, 226, 0.15) 0%,
+    transparent 55%
+  );
+}
+
+/* Lueur rétro sur les cartes */
+[data-theme="synthwave"] .bg-darkCard:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 0, 255, 0.3),
+    0 0 30px rgba(255, 0, 255, 0.1),
+    0 0 60px rgba(0, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 0, 255, 0.2),
+    0 35px 70px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Grille de perspective synthwave en fond */
+[data-theme="synthwave"]::before {
+  content: "";
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  background:
+    linear-gradient(transparent 0%, rgba(255, 0, 255, 0.03) 100%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 0, 255, 0.04) 0px,
+      rgba(255, 0, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 80px
+    );
+  pointer-events: none;
+  z-index: 0;
 }
 
 html.light-mode {
@@ -359,23 +517,88 @@ h4,
   overflow: hidden;
   background:
     linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.02) 45%,
+      135deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.01) 60%,
       rgba(255, 255, 255, 0.04) 100%
     ),
-    rgba(10, 10, 15, 0.4) !important;
-  backdrop-filter: blur(var(--blur-md)) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(var(--blur-md)) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: var(--radius-lg) !important;
+    rgba(12, 12, 18, 0.55) !important;
+  backdrop-filter: blur(40px) saturate(200%) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.05) !important;
+
+  /* Bordure lumineuse subtile avec dégradé */
+  border: 1px solid transparent !important;
+  background-clip: padding-box !important;
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 20px rgba(255, 255, 255, 0.02) !important;
-  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    /* bordure extérieure douce */ inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    /* reflet haut de carte */ inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    /* ombre basse interne */ 0 24px 60px rgba(0, 0, 0, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.4) !important;
+
+  border-radius: var(--radius-lg) !important;
+  transition: all 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Reflet "spéculaire" en haut à gauche (effet verre poli) */
+.bg-darkCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    rgba(255, 255, 255, 0.55) 40%,
+    rgba(255, 255, 255, 0.25) 60%,
+    transparent 95%
+  );
+  z-index: 2;
+  opacity: 0.7;
+  transition: opacity 0.4s ease;
+}
+
+/* Halo coloré au hover selon le thème */
+.bg-darkCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 15% 10%,
+    rgba(var(--primary-rgb), 0.05) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.bg-darkCard:hover {
+  transform: translateY(-5px) scale(1.01);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(255, 255, 255, 0.06) 100%
+    ),
+    rgba(14, 14, 22, 0.65) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--primary-rgb), 0.25),
+    /* bordure colorée au hover */ inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 35px 70px rgba(0, 0, 0, 0.75),
+    0 0 40px rgba(var(--primary-rgb), 0.07) !important;
+}
+
+.bg-darkCard:hover::before {
+  opacity: 1;
+}
+.bg-darkCard:hover::after {
+  opacity: 1;
 }
 .bg-darkCard::before {
   content: "";
@@ -455,22 +678,57 @@ h4,
   position: fixed;
   inset: 0;
   z-index: 100000;
-  background-color: #03030a;
+  background-color: var(--bg-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.8s ease;
+  /* Suppression du transition background — géré par les étapes */
 }
-html.light-mode #splash-screen {
-  background-color: #faf7f2;
-}
+
 .splash-text-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+  gap: 1.25rem;
+  /* Transition unifiée pour toutes les propriétés */
+  transition:
+    transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
+
+/* Anneau pulsant autour du logo (effet "aura") */
+.splash-logo-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-logo-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(var(--primary-rgb), 0.15) 0%,
+    transparent 70%
+  );
+  animation: splashAura 2s ease-in-out infinite alternate;
+}
+
+@keyframes splashAura {
+  from {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
 .splash-logo {
   font-size: clamp(5rem, 18vw, 10rem);
   font-weight: 900;
@@ -486,62 +744,103 @@ html.light-mode #splash-screen {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 0 40px rgba(var(--primary-rgb), 0.3));
+  /* Remplace drop-shadow fixe par animation */
+  animation: splashGlow 2.5s ease-in-out infinite alternate;
   line-height: 1;
 }
+
+@keyframes splashGlow {
+  from {
+    filter: drop-shadow(0 0 20px rgba(var(--primary-rgb), 0.2));
+  }
+  to {
+    filter: drop-shadow(0 0 50px rgba(var(--primary-rgb), 0.5));
+  }
+}
+
 .splash-subtitle {
-  margin-top: 1rem;
-  font-size: clamp(0.7rem, 3vw, 1.2rem);
+  font-size: clamp(0.65rem, 2.5vw, 1rem);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #a1a1aa;
+  letter-spacing: 0.25em;
+  color: rgba(160, 160, 175, 0.85);
   opacity: 0;
-  transform: translateY(15px);
+  transform: translateY(12px);
   transition:
-    opacity 0.8s ease,
-    transform 0.8s ease;
-  text-align: center;
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
 }
-.splash-step-2 .splash-text-container {
-  transform: translateY(-8vh);
+
+/* Barre de progression discréte */
+.splash-progress {
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--primary-rgb)),
+    rgb(var(--accent-rgb))
+  );
+  border-radius: 2px;
+  opacity: 0;
+  transition:
+    width 2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
 }
+
+/* Étape 1 : sous-titre + barre apparaissent */
 .splash-step-2 .splash-subtitle {
   opacity: 1;
   transform: translateY(0);
 }
+.splash-step-2 .splash-progress {
+  opacity: 1;
+  width: 100%;
+}
+.splash-step-2 .splash-text-container {
+  transform: translateY(-6vh);
+}
+
+/* Étape 2 : sortie vers le haut avec scale */
 .splash-step-3 {
-  background-color: transparent !important;
   pointer-events: none;
 }
 .splash-step-3 .splash-text-container {
-  transform: translateY(-8vh) scale(12);
+  transform: translateY(-12vh) scale(14);
   opacity: 0;
-  filter: none;
   transition:
-    transform 1s cubic-bezier(0.6, 0.04, 0.98, 0.33),
-    opacity 0.6s ease 0.2s;
+    transform 1.2s cubic-bezier(0.55, 0, 1, 0.45),
+    opacity 0.5s ease 0.15s;
 }
+.splash-step-3 .splash-logo-wrapper::before {
+  animation: none;
+  opacity: 0;
+}
+
+/* Bouton skip */
 .skip-splash-button {
   position: absolute;
   bottom: 2rem;
   right: 2rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #d1d5db;
-  font-size: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(209, 213, 219, 0.8);
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.5rem 0.9rem;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  letter-spacing: 0.1em;
+  padding: 0.45rem 0.85rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
 }
 .skip-splash-button:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+html.light-mode #splash-screen {
+  background-color: #faf7f2;
 }
 
 button:focus-visible,
@@ -646,5 +945,56 @@ html.light-mode .group:hover .group-hover\:text-white {
   .bg-darkCard {
     backdrop-filter: blur(8px) !important;
     background: rgba(17, 18, 25, 0.9) !important;
+  }
+}
+
+/* Bento Grid pour les jeux */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(220px, auto);
+  gap: 1.25rem;
+}
+
+/* Pattern alternatif : grande / petite / petite / grande */
+.bento-grid > article:nth-child(1) {
+  grid-column: span 7;
+}
+.bento-grid > article:nth-child(2) {
+  grid-column: span 5;
+}
+.bento-grid > article:nth-child(3) {
+  grid-column: span 5;
+}
+.bento-grid > article:nth-child(4) {
+  grid-column: span 7;
+}
+.bento-grid > article:nth-child(5) {
+  grid-column: span 6;
+}
+.bento-grid > article:nth-child(6) {
+  grid-column: span 6;
+}
+
+/* Fallback : éléments supplémentaires en 6/6 */
+.bento-grid > article:nth-child(n + 7) {
+  grid-column: span 6;
+}
+
+@media (max-width: 900px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bento-grid > article {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-grid > article {
+    grid-column: span 1 !important;
   }
 }
