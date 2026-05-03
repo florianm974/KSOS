@@ -2119,3 +2119,26 @@ html.light-mode .favorite-toggle.is-active {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Button states for toggles with aria-pressed attribute */
+button[aria-pressed="true"] {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+button[aria-pressed="true"]:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+html.light-mode button[aria-pressed="true"] {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #1f2937;
+}
+
+html.light-mode button[aria-pressed="true"]:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.3);
+}

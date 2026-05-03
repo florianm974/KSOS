@@ -6,7 +6,7 @@
     "dev": "tailwindcss -i ./src/input.css -o ./style.css --watch",
     "build": "tailwindcss -i ./src/input.css -o ./style.css --minify",
     "lint": "npm run lint:js && npm run lint:format",
-    "lint:js": "eslint app.js",
+    "lint:js": "eslint \"js/**/*.js\"",
     "lint:format": "prettier --check \"*.{js,html,css,json,md}\" \"src/**/*.css\"",
     "format": "prettier --write \"*.{js,html,css,json,md}\" \"src/**/*.css\""
   },

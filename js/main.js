@@ -20,6 +20,15 @@ import {
   buildResultsLabel,
 } from "./dom.js";
 
+// Utility: debounce function to reduce rerenders
+const debounce = (fn, ms) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+};
+
 window.addEventListener("DOMContentLoaded", async () => {
   const membersContainer = document.getElementById("members-container");
   const gamesContainer = document.getElementById("games-container");
@@ -28,6 +37,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const projectsContainer = document.getElementById("projects-container");
   const footerLinks = document.getElementById("footer-links");
   const currentYear = document.getElementById("current-year");
+  const gamesSection = document.getElementById("games-section");
+  const projectsSection = document.getElementById("projects-section");
 
   // --- Contrôles globaux ---
   const globalSortSelect = document.getElementById("global-sort");
@@ -38,6 +49,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   const globalOrderToggle = document.getElementById("global-order-toggle");
   const globalResetFiltersButton = document.getElementById(
     "global-reset-filters",
+  );
+  const globalFavoritesOnlyToggle = document.getElementById(
+    "global-favorites-only-toggle",
   );
 
   const gamesRecentNote = document.getElementById("games-recent-note");
@@ -81,6 +95,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
 
   const buildFavoriteKey = (item) => {
+    if (item && item.id) return String(item.id);
     const title = String(item.title || "")
       .trim()
       .toLowerCase();
@@ -107,6 +122,30 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const isFavorite = (item) => favoriteKeys.has(buildFavoriteKey(item));
 
+  const computeOldKey = (item) => {
+    const title = String(item.title || "")
+      .trim()
+      .toLowerCase();
+    const author = String(item.author || "")
+      .trim()
+      .toLowerCase();
+    const github = String(item.github || "")
+      .trim()
+      .toLowerCase();
+    const url = String(item.url || "")
+      .trim()
+      .toLowerCase();
+    return `${author}::${title}::${github || url}`;
+  };
+
+  const isFavoriteWithFallback = (item) => {
+    const key = buildFavoriteKey(item);
+    if (favoriteKeys.has(key)) return true;
+    // fallback: check old-style key
+    const oldKey = computeOldKey(item);
+    return favoriteKeys.has(oldKey);
+  };
+
   const toggleFavorite = (item) => {
     const key = buildFavoriteKey(item);
     if (!key) return;
@@ -121,11 +160,52 @@ window.addEventListener("DOMContentLoaded", async () => {
     renderAll();
   };
 
+  // Migrate stored favorites from old composite keys to the new `id` when possible
+  const migrateFavorites = (appData) => {
+    try {
+      const stored = readFavorites();
+      const items = [...(appData.games || []), ...(appData.projects || [])];
+      const idToItem = new Map();
+      items.forEach((it) => {
+        if (it && it.id) idToItem.set(String(it.id), it);
+      });
+
+      const oldKeyToId = new Map();
+      items.forEach((it) => {
+        const oldKey = computeOldKey(it);
+        if (it && it.id) oldKeyToId.set(oldKey, String(it.id));
+      });
+
+      let changed = false;
+      const newSet = new Set();
+      stored.forEach((k) => {
+        if (!k) return;
+        if (idToItem.has(k)) {
+          newSet.add(k);
+          return;
+        }
+        if (oldKeyToId.has(k)) {
+          newSet.add(oldKeyToId.get(k));
+          changed = true;
+          return;
+        }
+        // keep unknown entries as-is (avoid data loss)
+        newSet.add(k);
+      });
+
+      favoriteKeys = new Set(newSet);
+      if (changed) saveFavorites();
+    } catch (_) {
+      // ignore
+    }
+  };
+
   // État global unique
   let sortCriteria = localStorage.getItem("ksosSort") || "default";
   let sortOrder = localStorage.getItem("ksosOrder") || "asc";
   let authorFilter = localStorage.getItem("ksosAuthor") || "all";
   let searchQuery = localStorage.getItem("ksosSearch") || "";
+  let showOnlyFavorites = localStorage.getItem("ksosShowOnlyFavorites") === "1";
 
   let controlsBound = false;
 
@@ -136,9 +216,41 @@ window.addEventListener("DOMContentLoaded", async () => {
     globalOrderToggle.setAttribute("aria-pressed", String(isDesc));
   };
 
+  const initializeFavoritesOnlyToggle = () => {
+    if (!globalFavoritesOnlyToggle) return;
+
+    globalFavoritesOnlyToggle.setAttribute(
+      "aria-pressed",
+      String(showOnlyFavorites),
+    );
+
+    if (controlsBound) return;
+
+    globalFavoritesOnlyToggle.addEventListener("click", () => {
+      showOnlyFavorites = !showOnlyFavorites;
+      localStorage.setItem(
+        "ksosShowOnlyFavorites",
+        showOnlyFavorites ? "1" : "0",
+      );
+      globalFavoritesOnlyToggle.setAttribute(
+        "aria-pressed",
+        String(showOnlyFavorites),
+      );
+      renderAll();
+    });
+  };
+
   // Rend les deux sections avec le même filtre
   const renderAll = () => {
     if (!cachedAppData) return;
+
+    // Toggle visibility of Games and Projects sections when showing favorites only
+    if (gamesSection) {
+      gamesSection.classList.toggle("hidden", showOnlyFavorites);
+    }
+    if (projectsSection) {
+      projectsSection.classList.toggle("hidden", showOnlyFavorites);
+    }
 
     const criteria = globalSortSelect?.value || sortCriteria;
     const filterValue = globalAuthorFilterSelect?.value || authorFilter;
@@ -146,7 +258,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const createCatalogCard = (item) =>
       createCardElement(item, {
-        isFavorite: isFavorite(item),
+        isFavorite: isFavoriteWithFallback(item),
         onToggleFavorite: toggleFavorite,
       });
 
@@ -157,37 +269,44 @@ window.addEventListener("DOMContentLoaded", async () => {
     const allProjects = Array.isArray(cachedAppData.projects)
       ? cachedAppData.projects
       : [];
-    const processedGames = sortAndFilterItems(
-      allGames,
-      criteria,
-      sortOrder,
-      filterValue,
-      query,
-    );
 
-    clearElement(gamesContainer);
-    if (processedGames.length === 0) {
-      gamesContainer.appendChild(
-        createEmptyStateCard("Aucun jeu ne correspond à votre recherche."),
+    if (!showOnlyFavorites) {
+      const processedGames = sortAndFilterItems(
+        allGames,
+        criteria,
+        sortOrder,
+        filterValue,
+        query,
       );
+
+      clearElement(gamesContainer);
+      if (processedGames.length === 0) {
+        gamesContainer.appendChild(
+          createEmptyStateCard("Aucun jeu ne correspond à votre recherche."),
+        );
+      } else {
+        processedGames.forEach((game) =>
+          gamesContainer.appendChild(createCatalogCard(game)),
+        );
+      }
+
+      if (gamesRecentNote) {
+        const hasDates = allGames.some((g) => getItemTimestamp(g) !== null);
+        gamesRecentNote.classList.toggle(
+          "hidden",
+          !(criteria === "recent" && !hasDates),
+        );
+      }
+      if (gamesResultsCount) {
+        gamesResultsCount.textContent = buildResultsLabel(
+          processedGames.length,
+          "jeu",
+        );
+      }
     } else {
-      processedGames.forEach((game) =>
-        gamesContainer.appendChild(createCatalogCard(game)),
-      );
-    }
-
-    if (gamesRecentNote) {
-      const hasDates = allGames.some((g) => getItemTimestamp(g) !== null);
-      gamesRecentNote.classList.toggle(
-        "hidden",
-        !(criteria === "recent" && !hasDates),
-      );
-    }
-    if (gamesResultsCount) {
-      gamesResultsCount.textContent = buildResultsLabel(
-        processedGames.length,
-        "jeu",
-      );
+      clearElement(gamesContainer);
+      if (gamesRecentNote) gamesRecentNote.classList.add("hidden");
+      if (gamesResultsCount) gamesResultsCount.textContent = "";
     }
 
     // --- Favoris ---
@@ -247,41 +366,50 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     // --- Projets ---
-    const processedProjects = sortAndFilterItems(
-      allProjects,
-      criteria,
-      sortOrder,
-      filterValue,
-      query,
-    );
-
-    clearElement(projectsContainer);
-    if (processedProjects.length === 0) {
-      projectsContainer.appendChild(
-        createEmptyStateCard("Aucun projet ne correspond à votre recherche."),
+    if (!showOnlyFavorites) {
+      const processedProjects = sortAndFilterItems(
+        allProjects,
+        criteria,
+        sortOrder,
+        filterValue,
+        query,
       );
+
+      clearElement(projectsContainer);
+      if (processedProjects.length === 0) {
+        projectsContainer.appendChild(
+          createEmptyStateCard("Aucun projet ne correspond à votre recherche."),
+        );
+      } else {
+        processedProjects.forEach((project) =>
+          projectsContainer.appendChild(createCatalogCard(project)),
+        );
+      }
+
+      if (projectsRecentNote) {
+        const hasDates = allProjects.some((p) => getItemTimestamp(p) !== null);
+        projectsRecentNote.classList.toggle(
+          "hidden",
+          !(criteria === "recent" && !hasDates),
+        );
+      }
+      if (projectsResultsCount) {
+        projectsResultsCount.textContent = buildResultsLabel(
+          processedProjects.length,
+          "projet",
+        );
+      }
     } else {
-      processedProjects.forEach((project) =>
-        projectsContainer.appendChild(createCatalogCard(project)),
-      );
-    }
-
-    if (projectsRecentNote) {
-      const hasDates = allProjects.some((p) => getItemTimestamp(p) !== null);
-      projectsRecentNote.classList.toggle(
-        "hidden",
-        !(criteria === "recent" && !hasDates),
-      );
-    }
-    if (projectsResultsCount) {
-      projectsResultsCount.textContent = buildResultsLabel(
-        processedProjects.length,
-        "projet",
-      );
+      clearElement(projectsContainer);
+      if (projectsRecentNote) projectsRecentNote.classList.add("hidden");
+      if (projectsResultsCount) projectsResultsCount.textContent = "";
     }
   };
 
   const setupControls = (appData) => {
+    // Initialize favorites-only toggle independently, before checking other controls
+    initializeFavoritesOnlyToggle();
+
     if (!globalSortSelect || !globalAuthorFilterSelect || !globalOrderToggle)
       return;
 
@@ -342,10 +470,13 @@ window.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (globalSearchInput) {
-        globalSearchInput.addEventListener("input", (e) => {
-          searchQuery = e.target.value;
+        const debouncedSearch = debounce(() => {
           localStorage.setItem("ksosSearch", searchQuery);
           renderAll();
+        }, 150);
+        globalSearchInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value;
+          debouncedSearch();
         });
       }
 
@@ -362,7 +493,9 @@ window.addEventListener("DOMContentLoaded", async () => {
           sortOrder = "asc";
           authorFilter = "all";
           searchQuery = "";
+          showOnlyFavorites = false;
 
+          localStorage.setItem("ksosShowOnlyFavorites", "0");
           localStorage.setItem("ksosSort", sortCriteria);
           localStorage.setItem("ksosOrder", sortOrder);
           localStorage.setItem("ksosAuthor", authorFilter);
@@ -371,6 +504,9 @@ window.addEventListener("DOMContentLoaded", async () => {
           globalSortSelect.value = "default";
           globalAuthorFilterSelect.value = "all";
           if (globalSearchInput) globalSearchInput.value = "";
+          if (globalFavoritesOnlyToggle) {
+            globalFavoritesOnlyToggle.setAttribute("aria-pressed", "false");
+          }
           updateOrderToggleLabel();
           renderAll();
         });
@@ -383,6 +519,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const renderData = async () => {
     const appData = await fetchAppData();
     cachedAppData = await enrichAppDataWithGithubDates(appData);
+    // Attempt migration of existing favorites to item `id` when possible
+    migrateFavorites(cachedAppData);
 
     clearElement(membersContainer);
     clearElement(favoritesContainer);

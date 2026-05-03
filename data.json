@@ -7,6 +7,7 @@
   ],
   "games": [
     {
+      "id": "fall974-blanc-manger-coco",
       "title": "Blanc Manger Coco",
       "author": "fall974",
       "createdAt": "2024-07-12",
@@ -20,6 +21,7 @@
       "badgeClass": "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20"
     },
     {
+      "id": "fall974-le-petit-bac",
       "title": "Le Petit Bac",
       "author": "fall974",
       "createdAt": "2024-06-28",
@@ -33,6 +35,7 @@
       "badgeClass": "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
     },
     {
+      "id": "albarkun222-vroomdle",
       "title": "VroomDle",
       "author": "AlbarKun222",
       "createdAt": "2024-09-05",
@@ -46,6 +49,7 @@
       "badgeClass": "bg-teal-500/10 text-teal-400 border-teal-500/20"
     },
     {
+      "id": "infinity974-undercover",
       "title": "Undercover",
       "author": "Infinity974",
       "createdAt": "2024-08-16",
@@ -59,6 +63,7 @@
       "badgeClass": "bg-orange-500/10 text-orange-400 border-orange-500/20"
     },
     {
+      "id": "infinity974-top-ten",
       "title": "Top Ten",
       "author": "Infinity974",
       "createdAt": "2025-01-22",
@@ -74,6 +79,7 @@
   ],
   "projects": [
     {
+      "id": "florianm974-prompt-forge",
       "title": "Prompt Forge",
       "author": "florianm974",
       "createdAt": "2025-04-11",
@@ -87,6 +93,7 @@
       "badgeClass": "bg-slate-500/10 text-slate-400 border-slate-500/20"
     },
     {
+      "id": "florianm974-florian-links",
       "title": "florian-links",
       "author": "florianm974",
       "createdAt": "2025-02-14",

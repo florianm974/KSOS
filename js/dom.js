@@ -1,6 +1,6 @@
 // js/dom.js
 
-import { getItemTimestamp, parseItemDate, isItemNew } from "./logic.js";
+import { getItemTimestamp, isItemNew } from "./logic.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const AVATAR_FALLBACK =
