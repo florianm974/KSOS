@@ -23,6 +23,8 @@ import {
 window.addEventListener("DOMContentLoaded", async () => {
   const membersContainer = document.getElementById("members-container");
   const gamesContainer = document.getElementById("games-container");
+  const favoritesSection = document.getElementById("favorites-section");
+  const favoritesContainer = document.getElementById("favorites-container");
   const projectsContainer = document.getElementById("projects-container");
   const footerLinks = document.getElementById("footer-links");
   const currentYear = document.getElementById("current-year");
@@ -40,6 +42,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const gamesRecentNote = document.getElementById("games-recent-note");
   const gamesResultsCount = document.getElementById("games-results-count");
+  const favoritesRecentNote = document.getElementById("favorites-recent-note");
+  const favoritesResultsCount = document.getElementById(
+    "favorites-results-count",
+  );
   const projectsRecentNote = document.getElementById("projects-recent-note");
   const projectsResultsCount = document.getElementById(
     "projects-results-count",
@@ -48,6 +54,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (
     !membersContainer ||
     !gamesContainer ||
+    !favoritesContainer ||
     !projectsContainer ||
     !footerLinks ||
     !currentYear
@@ -58,6 +65,61 @@ window.addEventListener("DOMContentLoaded", async () => {
   currentYear.textContent = String(new Date().getFullYear());
 
   let cachedAppData = null;
+  const FAVORITES_STORAGE_KEY = "ksosFavorites";
+
+  const readFavorites = () => {
+    try {
+      const parsed = JSON.parse(
+        localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]",
+      );
+      return Array.isArray(parsed)
+        ? parsed.filter((value) => typeof value === "string")
+        : [];
+    } catch (_) {
+      return [];
+    }
+  };
+
+  const buildFavoriteKey = (item) => {
+    const title = String(item.title || "")
+      .trim()
+      .toLowerCase();
+    const author = String(item.author || "")
+      .trim()
+      .toLowerCase();
+    const github = String(item.github || "")
+      .trim()
+      .toLowerCase();
+    const url = String(item.url || "")
+      .trim()
+      .toLowerCase();
+    return `${author}::${title}::${github || url}`;
+  };
+
+  let favoriteKeys = new Set(readFavorites());
+
+  const saveFavorites = () => {
+    localStorage.setItem(
+      FAVORITES_STORAGE_KEY,
+      JSON.stringify(Array.from(favoriteKeys)),
+    );
+  };
+
+  const isFavorite = (item) => favoriteKeys.has(buildFavoriteKey(item));
+
+  const toggleFavorite = (item) => {
+    const key = buildFavoriteKey(item);
+    if (!key) return;
+
+    if (favoriteKeys.has(key)) {
+      favoriteKeys.delete(key);
+    } else {
+      favoriteKeys.add(key);
+    }
+
+    saveFavorites();
+    renderAll();
+  };
 
   // État global unique
   let sortCriteria = localStorage.getItem("ksosSort") || "default";
@@ -82,9 +144,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     const filterValue = globalAuthorFilterSelect?.value || authorFilter;
     const query = globalSearchInput?.value ?? searchQuery;
 
+    const createCatalogCard = (item) =>
+      createCardElement(item, {
+        isFavorite: isFavorite(item),
+        onToggleFavorite: toggleFavorite,
+      });
+
     // --- Jeux ---
     const allGames = Array.isArray(cachedAppData.games)
       ? cachedAppData.games
+      : [];
+    const allProjects = Array.isArray(cachedAppData.projects)
+      ? cachedAppData.projects
       : [];
     const processedGames = sortAndFilterItems(
       allGames,
@@ -101,7 +172,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       );
     } else {
       processedGames.forEach((game) =>
-        gamesContainer.appendChild(createCardElement(game)),
+        gamesContainer.appendChild(createCatalogCard(game)),
       );
     }
 
@@ -119,10 +190,63 @@ window.addEventListener("DOMContentLoaded", async () => {
       );
     }
 
+    // --- Favoris ---
+    const dedupedCatalog = new Map();
+    [...allGames, ...allProjects].forEach((item) => {
+      dedupedCatalog.set(buildFavoriteKey(item), item);
+    });
+
+    const favoriteItems = Array.from(dedupedCatalog.values()).filter((item) =>
+      isFavorite(item),
+    );
+
+    const shouldShowFavorites = favoriteItems.length > 0;
+    if (favoritesSection) {
+      favoritesSection.classList.toggle("hidden", !shouldShowFavorites);
+    }
+
+    if (!shouldShowFavorites) {
+      clearElement(favoritesContainer);
+      if (favoritesRecentNote) favoritesRecentNote.classList.add("hidden");
+      if (favoritesResultsCount) favoritesResultsCount.textContent = "";
+    } else {
+      const processedFavorites = sortAndFilterItems(
+        favoriteItems,
+        criteria,
+        sortOrder,
+        filterValue,
+        query,
+      );
+
+      clearElement(favoritesContainer);
+      if (processedFavorites.length === 0) {
+        favoritesContainer.appendChild(
+          createEmptyStateCard("Aucun favori ne correspond a votre recherche."),
+        );
+      } else {
+        processedFavorites.forEach((favorite) =>
+          favoritesContainer.appendChild(createCatalogCard(favorite)),
+        );
+      }
+
+      if (favoritesRecentNote) {
+        const hasDates = favoriteItems.some(
+          (item) => getItemTimestamp(item) !== null,
+        );
+        favoritesRecentNote.classList.toggle(
+          "hidden",
+          !(criteria === "recent" && !hasDates),
+        );
+      }
+      if (favoritesResultsCount) {
+        favoritesResultsCount.textContent = buildResultsLabel(
+          processedFavorites.length,
+          "favori",
+        );
+      }
+    }
+
     // --- Projets ---
-    const allProjects = Array.isArray(cachedAppData.projects)
-      ? cachedAppData.projects
-      : [];
     const processedProjects = sortAndFilterItems(
       allProjects,
       criteria,
@@ -138,7 +262,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       );
     } else {
       processedProjects.forEach((project) =>
-        projectsContainer.appendChild(createCardElement(project)),
+        projectsContainer.appendChild(createCatalogCard(project)),
       );
     }
 
@@ -261,6 +385,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     cachedAppData = await enrichAppDataWithGithubDates(appData);
 
     clearElement(membersContainer);
+    clearElement(favoritesContainer);
     clearElement(projectsContainer);
 
     (cachedAppData.members || []).forEach((member) => {
@@ -278,7 +403,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error(error);
     renderLoadError(
-      { gamesContainer, projectsContainer, membersContainer, footerLinks },
+      {
+        gamesContainer,
+        favoritesContainer,
+        projectsContainer,
+        membersContainer,
+        footerLinks,
+      },
       async () => {
         try {
           await renderData();

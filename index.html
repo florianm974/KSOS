@@ -382,6 +382,29 @@
         </button>
       </div>
 
+      <!-- SECTION FAVORIS -->
+      <section id="favorites-section" class="flex flex-col gap-8">
+        <div class="flex items-center gap-6">
+          <h2
+            class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white"
+          >
+            Favoris
+          </h2>
+          <div
+            class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"
+          ></div>
+        </div>
+        <p id="favorites-recent-note" class="text-xs text-gray-500 hidden">
+          Astuce: ajoute un champ <code>createdAt</code> dans
+          <code>data.json</code> pour trier par date recente.
+        </p>
+        <p
+          id="favorites-results-count"
+          class="text-xs font-bold uppercase tracking-wider text-gray-400"
+        ></p>
+        <div class="bento-grid" id="favorites-container"></div>
+      </section>
+
       <!-- SECTION JEUX -->
       <section class="flex flex-col gap-8">
         <div class="flex items-center gap-6">

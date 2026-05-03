@@ -43,7 +43,13 @@ export function createGithubIcon() {
   return svg;
 }
 
-export function createCardElement(item) {
+export function createCardElement(item, options = {}) {
+  const isFavorite = Boolean(options.isFavorite);
+  const onToggleFavorite =
+    typeof options.onToggleFavorite === "function"
+      ? options.onToggleFavorite
+      : null;
+
   const card = document.createElement("article");
   card.className = "bg-darkCard group flex flex-col p-6 md:p-8 h-full";
 
@@ -65,15 +71,8 @@ export function createCardElement(item) {
   titleLink.href = safeExternalUrl(item.url);
   titleLink.target = "_blank";
   titleLink.rel = "noopener noreferrer";
-  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors flex items-center gap-2`;
+  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link`;
   titleLink.textContent = item.title || "Projet";
-
-  const extMark = document.createElement("span");
-  extMark.className =
-    "opacity-50 group-hover:opacity-100 transform -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 transition-all text-sm";
-  extMark.textContent = "↗";
-  titleLink.appendChild(document.createTextNode(" "));
-  titleLink.appendChild(extMark);
 
   const byline = document.createElement("p");
   byline.className =
@@ -85,6 +84,46 @@ export function createCardElement(item) {
   headerLeft.appendChild(icon);
   headerLeft.appendChild(titleWrapper);
   header.appendChild(headerLeft);
+
+  const headerRight = document.createElement("div");
+  headerRight.className = "flex items-center gap-2";
+
+  const favoriteButton = document.createElement("button");
+  favoriteButton.type = "button";
+  favoriteButton.className = "favorite-toggle";
+  favoriteButton.setAttribute(
+    "aria-label",
+    `${isFavorite ? "Retirer des" : "Ajouter aux"} favoris: ${item.title || "ce projet"}`,
+  );
+  favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+  if (isFavorite) {
+    favoriteButton.classList.add("is-active");
+  }
+
+  const favoriteStar = document.createElement("span");
+  favoriteStar.className = "favorite-toggle-star";
+  favoriteStar.textContent = "★";
+  favoriteButton.appendChild(favoriteStar);
+
+  favoriteButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    favoriteButton.classList.remove("is-popping");
+    // Force reflow so rapid clicks replay the pop animation reliably.
+    void favoriteButton.offsetWidth;
+    favoriteButton.classList.add("is-popping");
+
+    if (onToggleFavorite) {
+      onToggleFavorite(item);
+    }
+  });
+
+  favoriteButton.addEventListener("animationend", () => {
+    favoriteButton.classList.remove("is-popping");
+  });
+
+  headerRight.appendChild(favoriteButton);
 
   // Correction ici : On sépare la date d'affichage (updatedAt) de la date de création (createdAt)
   const itemTimestamp = getItemTimestamp(item);
@@ -104,8 +143,10 @@ export function createCardElement(item) {
           month: "short",
           year: "numeric",
         }).format(itemTimestamp);
-    header.appendChild(datePill);
+    headerRight.appendChild(datePill);
   }
+
+  header.appendChild(headerRight);
 
   const description = document.createElement("p");
   description.className =
@@ -213,11 +254,17 @@ export function renderFooterLinks(members, container) {
 }
 
 export function renderLoadError(elements, retryHandler) {
-  const { gamesContainer, projectsContainer, membersContainer, footerLinks } =
-    elements;
+  const {
+    gamesContainer,
+    favoritesContainer,
+    projectsContainer,
+    membersContainer,
+    footerLinks,
+  } = elements;
   clearElement(membersContainer);
   clearElement(footerLinks);
   clearElement(gamesContainer);
+  if (favoritesContainer) clearElement(favoritesContainer);
   clearElement(projectsContainer);
 
   const errorCard = document.createElement("div");
