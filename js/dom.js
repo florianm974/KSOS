@@ -71,7 +71,7 @@ export function createCardElement(item, options = {}) {
   titleLink.href = safeExternalUrl(item.url);
   titleLink.target = "_blank";
   titleLink.rel = "noopener noreferrer";
-  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link`;
+  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link before:absolute before:inset-0 before:z-0`;
   titleLink.textContent = item.title || "Projet";
 
   const byline = document.createElement("p");
@@ -150,17 +150,40 @@ export function createCardElement(item, options = {}) {
 
   const description = document.createElement("p");
   description.className =
-    "text-gray-400 text-sm md:text-base leading-relaxed flex-1 relative z-10 mb-4";
+    "text-gray-400 text-sm md:text-base leading-relaxed flex-1 relative z-10 mb-4 pointer-events-none";
   description.textContent = item.desc || "";
 
   const techList = document.createElement("div");
   techList.className = "flex flex-wrap gap-2 mb-6 relative z-10";
+
+  // Dictionnaire d'icônes par technologie
+  const techIcons = {
+    html: "🌐",
+    css: "🎨",
+    javascript: "⚡",
+    react: "⚛️",
+    vue: "🟢",
+    python: "🐍",
+    node: "🟩",
+    godot: "🤖",
+    svelte: "🟢",
+    typescript: "📘",
+    tailwind: "🌊",
+  };
+
   const techs = Array.isArray(item.techs) ? item.techs : [];
   techs.forEach((tech) => {
     const chip = document.createElement("span");
+    chip.setAttribute("aria-label", `Technologie utilisée : ${tech}`);
     chip.className =
-      "px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider";
-    chip.textContent = String(tech);
+      "px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5";
+
+    const iconKey = String(tech).toLowerCase().trim();
+    const icon = techIcons[iconKey];
+
+    chip.innerHTML = icon
+      ? `<span aria-hidden="true">${icon}</span> ${tech}`
+      : String(tech);
     techList.appendChild(chip);
   });
 

@@ -1,5 +1,7 @@
 // js/logic.js
 
+import Fuse from "https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.mjs";
+
 export function parseItemDate(value) {
   if (typeof value !== "string" || !value.trim()) return null;
   const timestamp = Date.parse(value);
@@ -73,24 +75,40 @@ export function sortAndFilterItems(
   searchQuery,
 ) {
   const normalizedFilter = normalizeAuthorKey(authorFilter || "all");
-  const normalizedSearch = normalizeAuthorKey(searchQuery || "");
 
-  const filtered = items
+  // 1. Filtrer par auteur en mappant l'index d'origine
+  let filtered = items
     .map((item, index) => ({ ...item, __index: index }))
     .filter((item) => {
       const authorMatches =
         normalizedFilter === "all" ||
         normalizeAuthorKey(item.author) === normalizedFilter;
-      if (!authorMatches) return false;
-
-      if (!normalizedSearch) return true;
-      const searchableText = `${item.title || ""} ${item.desc || ""}`
-        .toLowerCase()
-        .trim();
-      return searchableText.includes(normalizedSearch);
+      return authorMatches;
     });
 
+  // 2. Recherche floue (Fuzzy Search) avec Fuse.js
+  if (searchQuery && searchQuery.trim() !== "") {
+    const fuse = new Fuse(filtered, {
+      keys: [
+        { name: "title", weight: 2 },
+        { name: "desc", weight: 1 },
+        { name: "techs", weight: 1 },
+        { name: "author", weight: 0.5 },
+        { name: "tagText", weight: 0.5 },
+      ],
+      threshold: 0.3, // Autorise les petites fautes de frappe
+      ignoreLocation: true,
+    });
+    filtered = fuse.search(searchQuery).map((result) => result.item);
+  }
+
+  // 3. Tri
   filtered.sort((a, b) => {
+    // Si on a une recherche, on garde l'ordre de pertinence de Fuse (sauf si un tri spé est demandé)
+    if (searchQuery && searchQuery.trim() !== "" && criteria === "default") {
+      return 0; // Fuse garde les meilleurs résultats en premier
+    }
+
     if (criteria === "title") {
       return (a.title || "").localeCompare(b.title || "", "fr", {
         sensitivity: "base",
