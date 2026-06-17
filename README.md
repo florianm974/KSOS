@@ -1,28 +1,28 @@
 # KSOS
 
-Collective portal for the KSOS dev group — games and personal projects in one place.
+Portail collectif du groupe de dev KSOS — jeux et projets personnels réunis en un seul endroit.
 
 **Live →** [florianm974.github.io/KSOS](https://florianm974.github.io/KSOS/)
 
 ---
 
-## Overview
+## Présentation
 
-> A shared hub for four developers, centralizing all our projects — games, tools and personal work — in a single page.
-
----
-
-## The Team
-
-| Member                                        |
-| --------------------------------------------- |
-| [fall974](https://github.com/fall974)         |
-| [AlbarKun222](https://github.com/AlbarKun222) |
-| [Infinity974](https://github.com/Infinity974) |
-| [florianm974](https://github.com/florianm974) |
+> Un hub partagé pour quatre développeurs, centralisant tous nos projets — jeux, outils et travaux personnels — en une seule page.
 
 ---
 
-## License
+## L'équipe
 
-MIT — see [LICENSE](LICENSE)
+| Membre                                           |
+| ------------------------------------------------ |
+| [fall974](https://github.com/fall974)            |
+| [AlbarKun222](https://github.com/AlbarKun222)    |
+| [Infinity974](https://github.com/Infinity974)    |
+| [florianm974](https://github.com/florianm974)    |
+
+---
+
+## Licence
+
+MIT — voir [LICENSE](LICENSE)
