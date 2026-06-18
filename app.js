@@ -1,24 +1,624 @@
-// js/main.js
+const REPO_DATE_CACHE_KEY = "ksosRepoDatesCacheV1";
+const REPO_DATE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 
-import {
-  fetchAppData,
-  enrichAppDataWithGithubDates,
-  clearRepoDateCache,
-} from "./api.js";
-import {
-  sortAndFilterItems,
-  buildAuthorOptions,
-  getItemTimestamp,
-} from "./logic.js";
-import {
-  clearElement,
-  createCardElement,
-  createMemberBadgeElement,
-  renderFooterLinks,
-  renderLoadError,
-  createEmptyStateCard,
-  buildResultsLabel,
-} from "./dom.js";
+async function fetchAppData() {
+  const response = await fetch("./data.json", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Impossible de charger data.json");
+  }
+  return response.json();
+}
+
+function extractGithubRepoSlug(url) {
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.hostname !== "github.com" &&
+      parsed.hostname !== "www.github.com"
+    ) {
+      return null;
+    }
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    if (segments.length < 2) return null;
+
+    const owner = segments[0];
+    const repo = segments[1].replace(/\.git$/i, "");
+    if (!owner || !repo) return null;
+
+    return `${owner}/${repo}`;
+  } catch (_) {
+    return null;
+  }
+}
+
+function readRepoDateCache() {
+  try {
+    const raw = localStorage.getItem(REPO_DATE_CACHE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function writeRepoDateCache(cache) {
+  try {
+    localStorage.setItem(REPO_DATE_CACHE_KEY, JSON.stringify(cache));
+  } catch (_) {
+    // Ignore storage write failures.
+  }
+}
+
+function clearRepoDateCache() {
+  try {
+    localStorage.removeItem(REPO_DATE_CACHE_KEY);
+  } catch (_) {
+    // Ignore storage remove failures.
+  }
+}
+
+const REPO_FAIL_CACHE_TTL_MS = 60 * 60 * 1000; // 1 heure avant de réessayer un échec
+
+function getCachedRepoDate(cache, slug) {
+  const entry = cache[slug];
+  if (!entry || !entry.fetchedAt) {
+    return null;
+  }
+  // Si c'est un échec récent, on ne réessaie pas
+  if (entry.failedAt) {
+    const isRecentFail =
+      Date.now() - Number(entry.failedAt) < REPO_FAIL_CACHE_TTL_MS;
+    return isRecentFail ? "FAILED" : null;
+  }
+  if (typeof entry.pushedAt !== "string") {
+    return null;
+  }
+  const isFresh = Date.now() - Number(entry.fetchedAt) < REPO_DATE_CACHE_TTL_MS;
+  return isFresh ? entry.pushedAt : null;
+}
+
+async function fetchRepoPushedAt(slug) {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${slug}`, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return typeof data.pushed_at === "string" ? data.pushed_at : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function enrichItemsWithGithubDates(items, cache) {
+  const clonedItems = (items || []).map((item) => ({ ...item }));
+  const slugs = Array.from(
+    new Set(
+      clonedItems
+        .map((item) => extractGithubRepoSlug(item.github))
+        .filter(Boolean),
+    ),
+  );
+
+  const datesBySlug = {};
+  const missingSlugs = [];
+
+  slugs.forEach((slug) => {
+    const cachedDate = getCachedRepoDate(cache, slug);
+    if (cachedDate === "FAILED") {
+      return; // Ne pas réessayer tout de suite
+    }
+    if (cachedDate) {
+      datesBySlug[slug] = cachedDate;
+    } else {
+      missingSlugs.push(slug);
+    }
+  });
+
+  const fetchedEntries = await Promise.all(
+    missingSlugs.map(async (slug) => {
+      const pushedAt = await fetchRepoPushedAt(slug);
+      return { slug, pushedAt };
+    }),
+  );
+
+  fetchedEntries.forEach(({ slug, pushedAt }) => {
+    if (!pushedAt) {
+      // Stocker l'échec pour éviter de re-fetcher trop souvent
+      cache[slug] = { failedAt: Date.now(), fetchedAt: Date.now() };
+      return;
+    }
+    datesBySlug[slug] = pushedAt;
+    cache[slug] = { pushedAt, fetchedAt: Date.now() };
+  });
+
+  return clonedItems.map((item) => {
+    const slug = extractGithubRepoSlug(item.github);
+    const pushedAt = slug ? datesBySlug[slug] : null;
+    if (!pushedAt) return item;
+
+    return { ...item, updatedAt: pushedAt };
+  });
+}
+
+async function enrichAppDataWithGithubDates(appData) {
+  const cache = readRepoDateCache();
+  const games = await enrichItemsWithGithubDates(appData.games || [], cache);
+  const projects = await enrichItemsWithGithubDates(
+    appData.projects || [],
+    cache,
+  );
+
+  writeRepoDateCache(cache);
+
+  return { ...appData, games, projects };
+}
+function parseItemDate(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+// 7 jours en millisecondes
+const NEW_ITEM_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isItemNew(item) {
+  const created = parseItemDate(item.createdAt);
+  if (created === null) return false;
+  return Date.now() - created <= NEW_ITEM_THRESHOLD_MS;
+}
+
+function getItemTimestamp(item) {
+  const createdTime = parseItemDate(item.createdAt);
+  const updatedTime = parseItemDate(item.updatedAt);
+
+  // Si l'item est nouveau (< 7 jours) → afficher createdAt
+  if (isItemNew(item) && createdTime !== null) {
+    return createdTime;
+  }
+
+  // Si l'item est vieux (>= 7 jours) → afficher updatedAt (dernier push)
+  if (updatedTime !== null) {
+    return updatedTime;
+  }
+
+  // Fallback : createdAt
+  return createdTime || parseItemDate(item.date);
+}
+
+function normalizeAuthorKey(author) {
+  return String(author || "")
+    .trim()
+    .toLowerCase();
+}
+
+function buildAuthorOptions(appData, itemCollectionKey) {
+  const catalog = new Map();
+
+  (appData.members || []).forEach((member) => {
+    const name = String(member.name || "").trim();
+    const key = normalizeAuthorKey(name);
+    if (key && !catalog.has(key)) {
+      catalog.set(key, name);
+    }
+  });
+
+  (appData[itemCollectionKey] || []).forEach((item) => {
+    const name = String(item.author || "").trim();
+    const key = normalizeAuthorKey(name);
+    if (key && !catalog.has(key)) {
+      catalog.set(key, name);
+    }
+  });
+
+  return Array.from(catalog.entries())
+    .map(([key, label]) => ({ key, label }))
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, "fr", { sensitivity: "base" }),
+    );
+}
+
+function sortAndFilterItems(items, criteria, order, authorFilter, searchQuery) {
+  const normalizedFilter = normalizeAuthorKey(authorFilter || "all");
+
+  // 1. Filtrer par auteur en mappant l'index d'origine
+  let filtered = items
+    .map((item, index) => ({ ...item, __index: index }))
+    .filter((item) => {
+      const authorMatches =
+        normalizedFilter === "all" ||
+        normalizeAuthorKey(item.author) === normalizedFilter;
+      return authorMatches;
+    });
+
+  // 2. Recherche améliorée (accent insensible, fuzzy)
+  if (searchQuery && searchQuery.trim() !== "") {
+    const normalize = (s) =>
+      String(s)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    const terms = normalize(searchQuery)
+      .split(/\s+/)
+      .filter(Boolean);
+    filtered = filtered.filter((item) => {
+      const searchable = normalize(
+        [
+          item.title,
+          item.desc,
+          ...(Array.isArray(item.techs) ? item.techs : []),
+          item.author,
+          item.tagText,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
+      return terms.every((term) => searchable.includes(term));
+    });
+  }
+
+  // 3. Tri
+  filtered.sort((a, b) => {
+    // Si on a une recherche, on garde l'ordre original (pertinence implicite)
+    if (searchQuery && searchQuery.trim() !== "" && criteria === "default") {
+      return 0;
+    }
+
+    if (criteria === "title") {
+      return (a.title || "").localeCompare(b.title || "", "fr", {
+        sensitivity: "base",
+      });
+    }
+
+    if (criteria === "author") {
+      const authorCompare = (a.author || "").localeCompare(
+        b.author || "",
+        "fr",
+        { sensitivity: "base" },
+      );
+      if (authorCompare !== 0) return authorCompare;
+      return (a.title || "").localeCompare(b.title || "", "fr", {
+        sensitivity: "base",
+      });
+    }
+
+    if (criteria === "recent") {
+      const timeA = getItemTimestamp(a);
+      const timeB = getItemTimestamp(b);
+
+      if (timeA === null && timeB === null) return a.__index - b.__index;
+      if (timeA === null) return 1;
+      if (timeB === null) return -1;
+      return timeB - timeA;
+    }
+
+    return a.__index - b.__index;
+  });
+
+  if (order === "desc") {
+    filtered.reverse();
+  }
+
+  return filtered;
+}
+const SVG_NS = "http://www.w3.org/2000/svg";
+const AVATAR_FALLBACK =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23121726'/%3E%3Cpath d='M32 34c8.3 0 15 6.7 15 15H17c0-8.3 6.7-15 15-15zm0-18a9 9 0 110 18 9 9 0 010-18z' fill='%23d1d5db'/%3E%3C/svg%3E";
+
+function safeExternalUrl(url) {
+  try {
+    const parsed = new URL(url, window.location.href);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return parsed.href;
+    }
+  } catch (_) {}
+  return "#";
+}
+
+function clearElement(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
+function createGithubIcon() {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("width", "18");
+  svg.setAttribute("height", "18");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  const path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute(
+    "d",
+    "M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22",
+  );
+  svg.appendChild(path);
+  return svg;
+}
+
+function createCardElement(item, options = {}) {
+  const isFavorite = Boolean(options.isFavorite);
+  const onToggleFavorite =
+    typeof options.onToggleFavorite === "function"
+      ? options.onToggleFavorite
+      : null;
+
+  const card = document.createElement("article");
+  card.tabIndex = 0;
+  card.className =
+    "bg-darkCard group flex flex-col p-6 md:p-8 h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40";
+
+  const header = document.createElement("div");
+  header.className = "flex items-start justify-between mb-4 relative z-10";
+
+  const headerLeft = document.createElement("div");
+  headerLeft.className = "flex items-center gap-4";
+
+  const icon = document.createElement("div");
+  icon.className =
+    "w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = item.icon || "🧩";
+
+  const titleWrapper = document.createElement("div");
+
+  const titleLink = document.createElement("a");
+  titleLink.href = safeExternalUrl(item.url);
+  titleLink.target = "_blank";
+  titleLink.rel = "noopener noreferrer";
+  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link before:absolute before:inset-0 before:z-0`;
+  titleLink.textContent = item.title || "Projet";
+
+  const byline = document.createElement("p");
+  byline.className =
+    "text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1";
+  byline.textContent = `par ${item.author || "inconnu"}`;
+
+  titleWrapper.appendChild(titleLink);
+  titleWrapper.appendChild(byline);
+  headerLeft.appendChild(icon);
+  headerLeft.appendChild(titleWrapper);
+  header.appendChild(headerLeft);
+
+  const headerRight = document.createElement("div");
+  headerRight.className = "flex items-center gap-2";
+
+  const favoriteButton = document.createElement("button");
+  favoriteButton.type = "button";
+  favoriteButton.className = "favorite-toggle";
+  favoriteButton.setAttribute(
+    "aria-label",
+    `${isFavorite ? "Retirer des" : "Ajouter aux"} favoris: ${item.title || "ce projet"}`,
+  );
+  favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+  if (isFavorite) {
+    favoriteButton.classList.add("is-active");
+  }
+
+  const favoriteStar = document.createElement("span");
+  favoriteStar.className = "favorite-toggle-star";
+  favoriteStar.textContent = "★";
+  favoriteButton.appendChild(favoriteStar);
+
+  favoriteButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    favoriteButton.classList.remove("is-popping");
+    // Force reflow so rapid clicks replay the pop animation reliably.
+    void favoriteButton.offsetWidth;
+    favoriteButton.classList.add("is-popping");
+
+    if (onToggleFavorite) {
+      onToggleFavorite(item);
+    }
+  });
+
+  favoriteButton.addEventListener("animationend", () => {
+    favoriteButton.classList.remove("is-popping");
+  });
+
+  headerRight.appendChild(favoriteButton);
+
+  // Correction ici : On sépare la date d'affichage (updatedAt) de la date de création (createdAt)
+  const itemTimestamp = getItemTimestamp(item);
+
+  if (itemTimestamp !== null) {
+    const datePill = document.createElement("span");
+    const isNewItem = isItemNew(item);
+
+    datePill.className = isNewItem
+      ? "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+      : "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10";
+
+    datePill.textContent = isNewItem
+      ? "Nouveau"
+      : new Intl.DateTimeFormat("fr-FR", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }).format(itemTimestamp);
+    headerRight.appendChild(datePill);
+  }
+
+  header.appendChild(headerRight);
+
+  const description = document.createElement("p");
+  description.className =
+    "text-gray-400 text-sm md:text-base leading-relaxed flex-1 relative z-10 mb-4 pointer-events-none";
+  description.textContent = item.desc || "";
+
+  const techList = document.createElement("div");
+  techList.className = "flex flex-wrap gap-2 mb-6 relative z-10";
+
+  // Dictionnaire d'icônes par technologie
+  const techIcons = {
+    html: "🌐",
+    css: "🎨",
+    javascript: "⚡",
+    react: "⚛️",
+    vue: "🟢",
+    python: "🐍",
+    node: "🟩",
+    godot: "🤖",
+    svelte: "🟢",
+    typescript: "📘",
+    tailwind: "🌊",
+  };
+
+  const techs = Array.isArray(item.techs) ? item.techs : [];
+  techs.forEach((tech) => {
+    const chip = document.createElement("span");
+    chip.setAttribute("aria-label", `Technologie utilisée : ${tech}`);
+    chip.className =
+      "px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5";
+
+    const iconKey = String(tech).toLowerCase().trim();
+    const icon = techIcons[iconKey];
+
+    chip.innerHTML = icon
+      ? `<span aria-hidden="true">${icon}</span> ${tech}`
+      : String(tech);
+    techList.appendChild(chip);
+  });
+
+  const bottom = document.createElement("div");
+  bottom.className =
+    "flex items-center justify-between relative z-10 pt-6 border-t border-white/5";
+
+  const badge = document.createElement("span");
+  badge.className = `px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${item.badgeClass || ""}`;
+  badge.textContent = item.tagText || "Projet";
+
+  const codeLink = document.createElement("a");
+  codeLink.href = safeExternalUrl(item.github);
+  codeLink.target = "_blank";
+  codeLink.rel = "noopener noreferrer";
+  codeLink.className =
+    "text-xs font-bold text-gray-400 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-2";
+  codeLink.setAttribute(
+    "aria-label",
+    `Voir le code de ${item.title || "ce projet"}`,
+  );
+  codeLink.appendChild(createGithubIcon());
+  codeLink.appendChild(document.createTextNode("Code"));
+
+  bottom.appendChild(badge);
+  bottom.appendChild(codeLink);
+
+  card.appendChild(header);
+  card.appendChild(description);
+  card.appendChild(techList);
+  card.appendChild(bottom);
+  return card;
+}
+
+function createMemberBadgeElement(member) {
+  const username = /^[a-zA-Z0-9-]{1,39}$/.test(member.github)
+    ? member.github
+    : null;
+  const profileUrl = username ? `https://github.com/${username}` : "#";
+
+  const anchor = document.createElement("a");
+  anchor.href = profileUrl;
+  anchor.target = "_blank";
+  anchor.rel = "noopener noreferrer";
+  anchor.className =
+    "glass-pill rounded-full flex items-center gap-3 pr-4 pl-1.5 py-1.5 group";
+
+  const img = document.createElement("img");
+  img.src = username ? `https://github.com/${username}.png` : AVATAR_FALLBACK;
+  img.alt = `Avatar ${member.name || "membre"}`;
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.width = 32;
+  img.height = 32;
+  img.className = "w-8 h-8 rounded-full border border-white/20 object-cover";
+  img.addEventListener(
+    "error",
+    () => {
+      img.src = AVATAR_FALLBACK;
+    },
+    { once: true },
+  );
+
+  const text = document.createElement("span");
+  text.className =
+    "text-sm font-bold text-gray-300 group-hover:text-white transition-colors";
+  text.textContent = member.name || "Membre";
+
+  anchor.appendChild(img);
+  anchor.appendChild(text);
+  return anchor;
+}
+
+function renderFooterLinks(members, container) {
+  clearElement(container);
+  members.forEach((member, index) => {
+    if (index > 0) {
+      const separator = document.createElement("span");
+      separator.className = "opacity-50";
+      separator.textContent = "·";
+      container.appendChild(separator);
+    }
+    const link = document.createElement("a");
+    link.href = safeExternalUrl(`https://github.com/${member.github || ""}`);
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.className = "hover:text-white transition-colors";
+    link.textContent = member.name || "Membre";
+    container.appendChild(link);
+  });
+}
+
+function renderLoadError(elements, retryHandler) {
+  const {
+    gamesContainer,
+    favoritesContainer,
+    projectsContainer,
+    membersContainer,
+    footerLinks,
+  } = elements;
+  clearElement(membersContainer);
+  clearElement(footerLinks);
+  clearElement(gamesContainer);
+  if (favoritesContainer) clearElement(favoritesContainer);
+  clearElement(projectsContainer);
+
+  const errorCard = document.createElement("div");
+  errorCard.className = "bg-darkCard p-6 md:p-8 text-gray-300 space-y-4";
+  const message = document.createElement("p");
+  message.textContent =
+    "Impossible de charger les donnees du portail. Verifie la presence de data.json.";
+  const retryButton = document.createElement("button");
+  retryButton.type = "button";
+  retryButton.className =
+    "px-4 py-2 rounded-lg bg-white/10 border border-white/20 font-bold text-xs uppercase tracking-wider hover:bg-white/20 transition-colors";
+  retryButton.textContent = "Reessayer";
+  retryButton.addEventListener("click", retryHandler);
+
+  errorCard.appendChild(message);
+  errorCard.appendChild(retryButton);
+  gamesContainer.appendChild(errorCard);
+}
+
+function createEmptyStateCard(message) {
+  const card = document.createElement("div");
+  card.className = "bg-darkCard p-6 md:p-8 text-gray-300 md:col-span-2";
+  card.textContent = message;
+  return card;
+}
+
+function buildResultsLabel(count, noun) {
+  return count <= 1 ? `${count} ${noun} trouve` : `${count} ${noun} trouves`;
+}
 
 // Utility: debounce function to reduce rerenders
 const debounce = (fn, ms) => {
@@ -404,6 +1004,29 @@ window.addEventListener("DOMContentLoaded", async () => {
       if (projectsRecentNote) projectsRecentNote.classList.add("hidden");
       if (projectsResultsCount) projectsResultsCount.textContent = "";
     }
+    observeCards();
+  };
+
+  const observeCards = () => {
+    const cardObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("card-visible");
+            cardObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08 },
+    );
+    document
+      .querySelectorAll(".bento-grid > article, #projects-container > article")
+      .forEach((card) => {
+        if (!card.classList.contains("card-visible")) {
+          card.classList.add("card-enter");
+          cardObserver.observe(card);
+        }
+      });
   };
 
   const setupControls = (appData) => {
@@ -516,6 +1139,48 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  const refreshRepoDatesLast = document.getElementById(
+    "refresh-repo-dates-last",
+  );
+  const githubDot = document.getElementById("github-dot");
+  function formatLastChecked(timestamp) {
+    const diff = Date.now() - timestamp;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "à l'instant";
+    if (mins < 60) return `il y a ${mins} min`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `il y a ${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `il y a ${days}j`;
+  }
+
+  function updateGithubSyncUI(success) {
+    if (success) {
+      if (githubDot) {
+        githubDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+      }
+    } else {
+      if (githubDot) {
+        githubDot.className = "w-2 h-2 rounded-full bg-gray-500";
+      }
+    }
+    if (refreshRepoDatesLast) {
+      const stored = localStorage.getItem(REPO_DATE_CACHE_KEY);
+      if (stored) {
+        try {
+          const cache = JSON.parse(stored);
+          const times = Object.values(cache).map(
+            (e) => Number(e.fetchedAt) || 0,
+          );
+          const latest = Math.max(...times, 0);
+          if (latest > 0) {
+            refreshRepoDatesLast.textContent = `Dernière vérification : ${formatLastChecked(latest)}`;
+          }
+        } catch (_) {}
+      }
+    }
+  }
+
   const renderData = async () => {
     const appData = await fetchAppData();
     cachedAppData = await enrichAppDataWithGithubDates(appData);
@@ -557,6 +1222,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       },
     );
   }
+
+  updateGithubSyncUI(true);
 
   // --- Logique Modale et Paramètres ---
   const notch = document.getElementById("settings-notch");
@@ -689,36 +1356,41 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  if (refreshRepoDatesButton) {
-    refreshRepoDatesButton.addEventListener("click", async () => {
-      refreshRepoDatesButton.disabled = true;
-      refreshRepoDatesButton.classList.add("opacity-50", "cursor-not-allowed");
-      if (refreshRepoDatesStatus) {
-        refreshRepoDatesStatus.textContent =
-          "Mise a jour en cours depuis GitHub...";
-      }
+  function triggerGithubRefresh() {
+    if (!refreshRepoDatesButton) return;
+    refreshRepoDatesButton.disabled = true;
+    refreshRepoDatesButton.classList.add("opacity-50", "cursor-not-allowed");
+    if (refreshRepoDatesStatus) {
+      refreshRepoDatesStatus.textContent = "Vérification en cours...";
+    }
 
-      try {
-        clearRepoDateCache();
-        await renderData();
+    clearRepoDateCache();
+    renderData()
+      .then(() => {
         if (refreshRepoDatesStatus) {
-          refreshRepoDatesStatus.textContent =
-            "Dates mises a jour depuis GitHub.";
+          refreshRepoDatesStatus.textContent = "Dates mises à jour ✓";
         }
-      } catch (error) {
+        updateGithubSyncUI(true);
+      })
+      .catch((error) => {
         console.error(error);
         if (refreshRepoDatesStatus) {
           refreshRepoDatesStatus.textContent =
-            "Echec du refresh. Les dates existantes ont ete conservees.";
+            "Échec — les dates en cache ont été conservées.";
         }
-      } finally {
+        updateGithubSyncUI(false);
+      })
+      .finally(() => {
         refreshRepoDatesButton.disabled = false;
         refreshRepoDatesButton.classList.remove(
           "opacity-50",
           "cursor-not-allowed",
         );
-      }
-    });
+      });
+  }
+
+  if (refreshRepoDatesButton) {
+    refreshRepoDatesButton.addEventListener("click", triggerGithubRefresh);
   }
 
   const updateThemeOptionSelection = () => {
@@ -791,13 +1463,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   window.scrollTo(0, 0);
 
   splashTimers.push(
-    setTimeout(() => splashScreen.classList.add("splash-step-2"), 800),
+    setTimeout(() => splashScreen.classList.add("splash-step-2"), 500),
   );
   splashTimers.push(
     setTimeout(() => {
       splashScreen.classList.add("splash-step-3");
       revealMainContent();
-    }, 2600),
+    }, 1800),
   );
-  splashTimers.push(setTimeout(() => removeSplash(), 4000));
+  splashTimers.push(setTimeout(() => removeSplash(), 2800));
 });
