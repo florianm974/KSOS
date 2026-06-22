@@ -105,20 +105,6 @@
       "techs": ["HTML", "CSS", "JavaScript"],
       "hoverClass": "group-hover:text-slate-400",
       "badgeClass": "bg-slate-500/10 text-slate-400 border-slate-500/20"
-    },
-    {
-      "id": "florianm974-florian-links",
-      "title": "florian-links",
-      "author": "florianm974",
-      "createdAt": "2025-02-14",
-      "url": "https://florianm974.github.io/florian-links/",
-      "github": "https://github.com/florianm974/florian-links",
-      "desc": "Page de liens personnalisée regroupant les profils, réseaux et ressources de Florian en un seul endroit.",
-      "icon": "🔗",
-      "tagText": "Link tree",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-blue-400",
-      "badgeClass": "bg-blue-500/10 text-blue-400 border-blue-500/20"
     }
   ]
 }
