@@ -1,5 +1,5 @@
-// sw.js — KSOS Service Worker v2
-const CACHE_NAME = "ksos-cache-v2";
+// sw.js — KSOS Service Worker v3
+const CACHE_NAME = "ksos-cache-v3";
 const STATIC_ASSETS = [
   "/KSOS/",
   "/KSOS/index.html",
@@ -49,6 +49,20 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  if (request.url.includes("data.json")) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) =>
+        fetch(request)
+          .then((response) => {
+            cache.put(request, response.clone());
+            return response;
+          })
+          .catch(() => caches.match(request)),
+      ),
     );
     return;
   }
