@@ -1,5 +1,6 @@
 const REPO_DATE_CACHE_KEY = "ksosRepoDatesCacheV1";
 const REPO_DATE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const INTRO_SEEN_KEY = "ksosIntroSeen";
 
 async function fetchAppData() {
   const response = await fetch("./data.json", { cache: "no-store" });
@@ -343,6 +344,43 @@ function createGithubIcon() {
   return svg;
 }
 
+function createExternalLinkIcon() {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  const path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute(
+    "d",
+    "M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6",
+  );
+  svg.appendChild(path);
+  return svg;
+}
+
+const CARD_ACCENTS = [
+  { color: "#d8ff5f", rgb: "216, 255, 95" },
+  { color: "#ff8e72", rgb: "255, 142, 114" },
+  { color: "#74dbff", rgb: "116, 219, 255" },
+  { color: "#ffcf63", rgb: "255, 207, 99" },
+];
+
+function getCardAccent(item) {
+  const key = String(item?.author || item?.title || "KSOS");
+  const hash = Array.from(key).reduce(
+    (total, character) => total + character.charCodeAt(0),
+    0,
+  );
+  return CARD_ACCENTS[hash % CARD_ACCENTS.length];
+}
+
 function createCardElement(item, options = {}) {
   const isFavorite = Boolean(options.isFavorite);
   const onToggleFavorite =
@@ -353,32 +391,37 @@ function createCardElement(item, options = {}) {
   const card = document.createElement("article");
   card.tabIndex = 0;
   card.className =
-    "bg-darkCard group flex flex-col p-6 md:p-8 h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40";
+    "bg-darkCard catalog-card group flex flex-col p-6 md:p-8 h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40";
+  const accent = getCardAccent(item);
+  card.style.setProperty("--card-accent", accent.color);
+  card.style.setProperty("--card-accent-rgb", accent.rgb);
 
   const header = document.createElement("div");
-  header.className = "flex items-start justify-between mb-4 relative z-10";
+  header.className =
+    "catalog-card__header flex items-start justify-between mb-4 relative z-10";
 
   const headerLeft = document.createElement("div");
-  headerLeft.className = "flex items-center gap-4";
+  headerLeft.className = "catalog-card__intro flex items-center gap-4";
 
   const icon = document.createElement("div");
   icon.className =
-    "w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300";
+    "catalog-card__icon w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300";
   icon.setAttribute("aria-hidden", "true");
   icon.textContent = item.icon || "🧩";
 
   const titleWrapper = document.createElement("div");
+  titleWrapper.className = "catalog-card__heading";
 
   const titleLink = document.createElement("a");
   titleLink.href = safeExternalUrl(item.url);
   titleLink.target = "_blank";
   titleLink.rel = "noopener noreferrer";
-  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link before:absolute before:inset-0 before:z-0`;
+  titleLink.className = `catalog-card__title text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link before:absolute before:inset-0 before:z-0`;
   titleLink.textContent = item.title || "Projet";
 
   const byline = document.createElement("p");
   byline.className =
-    "text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1";
+    "catalog-card__byline text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1";
   byline.textContent = `par ${item.author || "inconnu"}`;
 
   titleWrapper.appendChild(titleLink);
@@ -388,7 +431,7 @@ function createCardElement(item, options = {}) {
   header.appendChild(headerLeft);
 
   const headerRight = document.createElement("div");
-  headerRight.className = "flex items-center gap-2";
+  headerRight.className = "catalog-card__meta flex items-center gap-2";
 
   const favoriteButton = document.createElement("button");
   favoriteButton.type = "button";
@@ -435,8 +478,8 @@ function createCardElement(item, options = {}) {
     const isNewItem = isItemNew(item);
 
     datePill.className = isNewItem
-      ? "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-      : "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10";
+      ? "catalog-card__date px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+      : "catalog-card__date px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10";
 
     datePill.textContent = isNewItem
       ? "Nouveau"
@@ -452,11 +495,12 @@ function createCardElement(item, options = {}) {
 
   const description = document.createElement("p");
   description.className =
-    "text-gray-400 text-sm md:text-base leading-relaxed flex-1 relative z-10 mb-4 pointer-events-none";
+    "catalog-card__description text-gray-400 text-sm md:text-base leading-relaxed flex-1 relative z-10 mb-4 pointer-events-none";
   description.textContent = item.desc || "";
 
   const techList = document.createElement("div");
-  techList.className = "flex flex-wrap gap-2 mb-6 relative z-10";
+  techList.className =
+    "catalog-card__tech-list flex flex-wrap gap-2 mb-6 relative z-10";
 
   // Dictionnaire d'icônes par technologie
   const techIcons = {
@@ -478,7 +522,7 @@ function createCardElement(item, options = {}) {
     const chip = document.createElement("span");
     chip.setAttribute("aria-label", `Technologie utilisée : ${tech}`);
     chip.className =
-      "px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5";
+      "catalog-card__tech px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5";
 
     const iconKey = String(tech).toLowerCase().trim();
     const icon = techIcons[iconKey];
@@ -491,18 +535,34 @@ function createCardElement(item, options = {}) {
 
   const bottom = document.createElement("div");
   bottom.className =
-    "flex items-center justify-between relative z-10 pt-6 border-t border-white/5";
+    "catalog-card__footer flex items-center justify-between gap-4 relative z-10 pt-6 border-t border-white/5 card-actions";
 
   const badge = document.createElement("span");
-  badge.className = `px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${item.badgeClass || ""}`;
+  badge.className = `catalog-card__category px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${item.badgeClass || ""}`;
   badge.textContent = item.tagText || "Projet";
+
+  const actionLinks = document.createElement("div");
+  actionLinks.className = "catalog-card__links flex items-center gap-2 card-links";
+
+  const openLink = document.createElement("a");
+  openLink.href = safeExternalUrl(item.url);
+  openLink.target = "_blank";
+  openLink.rel = "noopener noreferrer";
+  openLink.className =
+    "catalog-card__action card-action-link card-action-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2";
+  openLink.setAttribute(
+    "aria-label",
+    `Ouvrir ${item.title || "ce projet"}`,
+  );
+  openLink.appendChild(createExternalLinkIcon());
+  openLink.appendChild(document.createTextNode("Ouvrir"));
 
   const codeLink = document.createElement("a");
   codeLink.href = safeExternalUrl(item.github);
   codeLink.target = "_blank";
   codeLink.rel = "noopener noreferrer";
   codeLink.className =
-    "text-xs font-bold text-gray-400 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-2";
+    "catalog-card__action card-action-link text-xs font-bold uppercase tracking-widest flex items-center gap-2";
   codeLink.setAttribute(
     "aria-label",
     `Voir le code de ${item.title || "ce projet"}`,
@@ -510,8 +570,11 @@ function createCardElement(item, options = {}) {
   codeLink.appendChild(createGithubIcon());
   codeLink.appendChild(document.createTextNode("Code"));
 
+  actionLinks.appendChild(openLink);
+  actionLinks.appendChild(codeLink);
+
   bottom.appendChild(badge);
-  bottom.appendChild(codeLink);
+  bottom.appendChild(actionLinks);
 
   card.appendChild(header);
   card.appendChild(description);
@@ -596,12 +659,12 @@ function renderLoadError(elements, retryHandler) {
   errorCard.className = "bg-darkCard p-6 md:p-8 text-gray-300 space-y-4";
   const message = document.createElement("p");
   message.textContent =
-    "Impossible de charger les donnees du portail. Verifie la presence de data.json.";
+    "Impossible de charger les données du portail. Vérifie la présence de data.json.";
   const retryButton = document.createElement("button");
   retryButton.type = "button";
   retryButton.className =
     "px-4 py-2 rounded-lg bg-white/10 border border-white/20 font-bold text-xs uppercase tracking-wider hover:bg-white/20 transition-colors";
-  retryButton.textContent = "Reessayer";
+  retryButton.textContent = "Réessayer";
   retryButton.addEventListener("click", retryHandler);
 
   errorCard.appendChild(message);
@@ -617,7 +680,7 @@ function createEmptyStateCard(message) {
 }
 
 function buildResultsLabel(count, noun) {
-  return count <= 1 ? `${count} ${noun} trouve` : `${count} ${noun} trouves`;
+  return count <= 1 ? `${count} ${noun} trouvé` : `${count} ${noun}s trouvés`;
 }
 
 // Utility: debounce function to reduce rerenders
@@ -1345,8 +1408,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   if (introToggle) {
-    const introEnabled = localStorage.getItem("ksosIntroEnabled") !== "0";
-    introToggle.checked = introEnabled;
+    const introEveryVisit = localStorage.getItem("ksosIntroEnabled") === "1";
+    introToggle.checked = introEveryVisit;
 
     introToggle.addEventListener("change", (event) => {
       localStorage.setItem(
@@ -1426,7 +1489,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
-  const introEnabled = localStorage.getItem("ksosIntroEnabled") !== "0";
+  const introPreference = localStorage.getItem("ksosIntroEnabled");
+  const introAlreadySeen = localStorage.getItem(INTRO_SEEN_KEY) === "1";
+  const introEnabled =
+    introPreference === "1" || (introPreference === null && !introAlreadySeen);
   const splashTimers = [];
 
   const clearSplashTimers = () => {
@@ -1442,6 +1508,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const removeSplash = () => {
     clearSplashTimers();
+    localStorage.setItem(INTRO_SEEN_KEY, "1");
     if (splashScreen) splashScreen.remove();
     document.body.style.overflow = "";
   };

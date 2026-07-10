@@ -290,6 +290,126 @@ header.ksos-header {
 .bg-darkCard:hover::before { transform: scaleX(1); }
 .bg-darkCard:hover::after { opacity: 1; transform: scale(1.5); }
 
+.bg-darkCard.catalog-card {
+  min-height: 19.5rem;
+  padding: 1.5rem !important;
+  border-color: var(--border-soft);
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+.bg-darkCard.catalog-card::before {
+  top: 1rem;
+  bottom: 1rem;
+  left: -1px;
+  right: auto;
+  width: 3px;
+  height: auto;
+  background: var(--card-accent);
+  transform: scaleY(0);
+  transform-origin: center;
+}
+.bg-darkCard.catalog-card::after {
+  width: 13rem;
+  height: 13rem;
+  right: -6rem;
+  bottom: -8rem;
+  background: radial-gradient(circle, rgba(var(--card-accent-rgb), .14), transparent 68%);
+}
+.bg-darkCard.catalog-card:hover {
+  border-color: rgba(var(--card-accent-rgb), .55);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, .24) !important;
+}
+.bg-darkCard.catalog-card:hover::before { transform: scaleY(1); }
+.catalog-card__header { gap: .75rem; }
+.catalog-card__intro { min-width: 0; }
+.catalog-card__heading { min-width: 0; }
+.bg-darkCard .catalog-card__title {
+  color: var(--text) !important;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.catalog-card__byline {
+  color: var(--text-muted) !important;
+  font-family: "DM Mono", monospace;
+  font-size: .58rem !important;
+  letter-spacing: .09em !important;
+}
+#main-content .catalog-card__icon {
+  flex: 0 0 3rem;
+  width: 3rem;
+  height: 3rem;
+  border-color: rgba(var(--card-accent-rgb), .24) !important;
+  border-radius: 8px !important;
+  background: rgba(var(--card-accent-rgb), .1) !important;
+  box-shadow: none !important;
+}
+.catalog-card__meta { flex: 0 0 auto; }
+#main-content .catalog-card__date {
+  border-color: rgba(var(--card-accent-rgb), .2) !important;
+  background: rgba(var(--card-accent-rgb), .1) !important;
+  color: var(--text-soft) !important;
+  font-family: "DM Mono", monospace;
+  font-size: .56rem !important;
+  letter-spacing: .05em !important;
+}
+.catalog-card__description {
+  max-width: 46ch;
+  color: var(--text-soft) !important;
+  font-size: .92rem !important;
+  line-height: 1.62 !important;
+}
+.catalog-card__tech-list { gap: .45rem; }
+#main-content .bg-darkCard.catalog-card .catalog-card__tech {
+  border-color: var(--border-soft) !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  font-family: "DM Mono", monospace;
+  font-size: .58rem !important;
+  font-weight: 500;
+  letter-spacing: .04em !important;
+}
+.catalog-card__footer {
+  min-height: 3.6rem;
+  border-color: var(--border-soft) !important;
+}
+#main-content .catalog-card__category {
+  border-color: rgba(var(--card-accent-rgb), .28) !important;
+  border-radius: 999px;
+  background: rgba(var(--card-accent-rgb), .1) !important;
+  color: var(--card-accent) !important;
+  font-family: "DM Mono", monospace;
+  font-size: .58rem !important;
+  font-weight: 500 !important;
+  letter-spacing: .06em !important;
+}
+.catalog-card__links { gap: .5rem; }
+.catalog-card__action {
+  min-height: 2.25rem;
+  border-radius: 5px;
+  font-family: "DM Mono", monospace;
+  font-size: .59rem !important;
+  font-weight: 500 !important;
+  letter-spacing: .04em !important;
+}
+#main-content .catalog-card .card-action-link:hover {
+  background: rgba(var(--card-accent-rgb), .1);
+  border-color: rgba(var(--card-accent-rgb), .5);
+  color: var(--card-accent);
+}
+#main-content .catalog-card .card-action-primary {
+  background: var(--card-accent);
+  border-color: var(--card-accent);
+  color: #111411;
+}
+#main-content .catalog-card .card-action-primary:hover {
+  background: var(--card-accent);
+  color: #111411;
+}
+
 .bg-darkCard .text-white { color: var(--gold-light) !important; }
 .bg-darkCard .text-gray-300 { color: var(--text) !important; }
 .bg-darkCard .text-gray-400 { color: var(--text-soft) !important; }
@@ -501,12 +621,14 @@ h1.text-gradient {
 /* ===== GLOBAL CONTROLS ===== */
 #global-controls {
   position: relative;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
   border: 1px solid var(--border-soft);
+  border-radius: 8px;
   display: flex;
   align-items: flex-start;
   gap: .75rem;
   padding: 1rem;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .12);
 }
 #global-controls > div:first-child {
   display: flex;
@@ -517,24 +639,26 @@ h1.text-gradient {
   min-width: 0;
 }
 #global-controls label {
-  font-family: "JetBrains Mono", monospace;
+  font-family: "DM Mono", monospace;
   font-size: .6rem;
   letter-spacing: .25em;
   text-transform: uppercase;
-  color: var(--purple-soft);
+  color: var(--text-muted);
   padding: .15rem .5rem;
-  border: 1px solid rgba(112,64,168,.3);
-  background: rgba(112,64,168,.05);
-  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
   white-space: nowrap;
 }
 #global-controls select,
 #global-controls input,
 #global-controls button {
-  font-family: "JetBrains Mono", monospace;
+  min-height: 2.4rem;
+  border-radius: 5px;
+  font-family: "DM Mono", monospace;
   font-size: .68rem;
   padding: .4rem .7rem;
-  background: var(--surface2);
+  background: rgba(255, 255, 255, .035);
   border: 1px solid var(--border-soft);
   color: var(--text-soft);
   transition: all .25s ease;
@@ -546,9 +670,15 @@ h1.text-gradient {
   box-shadow: 0 0 0 2px var(--gold-glow);
 }
 #global-controls button:hover {
-  background: var(--gold-glow);
+  background: rgba(216, 255, 95, .12);
   border-color: var(--gold);
-  color: var(--gold);
+  color: var(--gold-light);
+}
+#global-order-toggle[aria-pressed="true"],
+#global-favorites-only-toggle[aria-pressed="true"] {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #111411;
 }
 #global-controls select option {
   background: var(--bg);
@@ -1070,6 +1200,10 @@ select:focus-visible {
   .card-action-link {
     justify-content: center;
   }
+  .bg-darkCard.catalog-card { min-height: 0; }
+  .catalog-card__footer { min-height: 0; }
+  .catalog-card__meta { gap: .4rem; }
+  .catalog-card__date { padding: .38rem .48rem !important; }
 }
 @media (max-width: 580px) {
   .ksos-logo { font-size: 3.5rem; }
