@@ -1,459 +1,191 @@
 <!doctype html>
-<html lang="fr" data-theme="default">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="dark light" />
     <title>KSOS — Portail de jeux & Projets</title>
-    <meta
-      name="description"
-      content="Portail regroupant les jeux et projets du collectif KSOS, développeurs passionnés à La Réunion."
-    />
+    <meta name="description" content="Portail regroupant les jeux et projets du collectif KSOS, développeurs passionnés à La Réunion." />
 
-    <!-- SEO & Réseaux Sociaux (Open Graph / Twitter Cards) -->
     <meta property="og:title" content="KSOS — Portail de jeux & Projets" />
-    <meta
-      property="og:description"
-      content="Découvrez les jeux (Le Petit Bac, VroomDle...) et projets du collectif KSOS, développeurs passionnés à La Réunion."
-    />
+    <meta property="og:description" content="Découvrez les jeux (Le Petit Bac, VroomDle...) et projets du collectif KSOS, développeurs passionnés à La Réunion." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://florianm974.github.io/KSOS/" />
-    <meta
-      property="og:image"
-      content="https://florianm974.github.io/KSOS/assets/og-ksos.svg"
-    />
+    <meta property="og:image" content="https://florianm974.github.io/KSOS/assets/og-ksos.svg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:image"
-      content="https://florianm974.github.io/KSOS/assets/og-ksos.svg"
-    />
+    <meta name="twitter:image" content="https://florianm974.github.io/KSOS/assets/og-ksos.svg" />
 
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"
-    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='85'>🌘</text></svg>" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
     <link href="./style.css" rel="stylesheet" />
 
-    <!-- Prévention du flash blanc au chargement -->
     <script>
       const savedTheme = localStorage.getItem("ksosTheme") || "dark";
       if (savedTheme === "light") {
         document.documentElement.classList.add("light-mode");
       }
-      const savedColorTheme =
-        localStorage.getItem("ksosColorTheme") || "default";
-      document.documentElement.setAttribute("data-theme", savedColorTheme);
     </script>
   </head>
 
-  <body class="relative selection:bg-white/20 selection:text-white">
-    <!-- Splash Screen (Chargement d'intro) -->
+  <body>
+    <div class="cursor-follower" id="cursor-follower" aria-hidden="true"></div>
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+    <!-- Splash Screen -->
     <div id="splash-screen">
       <div class="splash-text-container">
         <div class="splash-logo-wrapper">
           <div class="splash-logo">KSOS</div>
         </div>
-        <div class="splash-subtitle">
-          4 développeurs réunis en un même endroit
-        </div>
+        <div class="splash-subtitle">4 développeurs réunis en un même endroit</div>
         <div class="splash-progress"></div>
       </div>
-      <button id="skip-splash" type="button" class="skip-splash-button">
-        Passer l'intro
-      </button>
+      <button id="skip-splash" type="button" class="skip-splash-button">Passer l'intro</button>
     </div>
 
-    <!-- Fond Animé -->
-    <div class="bg-orb bg-orb-1"></div>
-    <div class="bg-orb bg-orb-2"></div>
-    <div class="bg-orb bg-orb-3"></div>
-
-    <!-- Languette Paramètres (En haut à droite) -->
-    <button
-      id="settings-notch"
-      type="button"
-      aria-label="Ouvrir les paramètres"
-      aria-controls="settings-dialog"
-      aria-expanded="false"
-      class="fixed top-0 right-4 md:right-8 top-notch border-b border-l border-r border-white/20 px-5 py-2.5 rounded-b-2xl z-[9000] cursor-pointer hover:bg-white/10 transition-all duration-300 flex items-center gap-2 group shadow-lg hover:translate-y-1"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-400 group-hover:text-white transition-all duration-500 transform group-hover:rotate-90"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2.5"
-          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-        />
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2.5"
-          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-        />
+    <!-- Settings Notch -->
+    <button id="settings-notch" type="button" aria-label="Ouvrir les paramètres" aria-controls="settings-dialog" aria-expanded="false">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
-      <span
-        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-200 transition-colors hidden sm:block"
-        >Paramètres</span
-      >
+      <span class="notch-label">Paramètres</span>
     </button>
 
-    <!-- Modale Paramètres -->
-    <div
-      id="settings-modal-overlay"
-      aria-hidden="true"
-      class="fixed inset-0 bg-black/60 backdrop-blur-md z-[99999] flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-400"
-    >
-      <div
-        id="settings-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-title"
-        class="custom-modal border border-white/20 rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-90 relative transition-transform duration-400"
-      >
-        <button
-          id="close-settings"
-          type="button"
-          aria-label="Fermer les paramètres"
-          class="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
+    <!-- Settings Modal -->
+    <div id="settings-modal-overlay" aria-hidden="true" class="opacity-0">
+      <div id="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title" class="custom-modal">
+        <button id="close-settings" type="button" aria-label="Fermer les paramètres">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h3
-          id="settings-title"
-          class="text-white text-2xl font-black mb-6 text-center tracking-wide font-display"
-        >
-          Préférences
-        </h3>
-
-        <!-- Thèmes de Couleurs -->
-        <div class="flex flex-col settings-section mb-4 gap-4">
-          <span
-            class="text-white font-bold tracking-widest uppercase text-sm font-display"
-            >Thème Visuel 🎨</span
-          >
-          <div class="grid grid-cols-2 gap-3" id="theme-selector">
-            <label
-              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
-            >
-              <input
-                type="radio"
-                name="color-theme"
-                value="default"
-                class="hidden"
-              />
-              <div
-                class="w-5 h-5 rounded-full transition-transform duration-200"
-                style="background: linear-gradient(to right, #c9a96e, #7040a8)"
-              ></div>
-              <span
-                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
-                >Signature</span
-              >
-            </label>
-            <label
-              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
-            >
-              <input
-                type="radio"
-                name="color-theme"
-                value="cyberpunk"
-                class="hidden"
-              />
-              <div
-                class="w-5 h-5 rounded-full transition-transform duration-200"
-                style="background: linear-gradient(to right, #00f0ff, #ff0080)"
-              ></div>
-              <span
-                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
-                >Cyberpunk</span
-              >
-            </label>
-            <label
-              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
-            >
-              <input
-                type="radio"
-                name="color-theme"
-                value="toxic"
-                class="hidden"
-              />
-              <div
-                class="w-5 h-5 rounded-full transition-transform duration-200"
-                style="background: linear-gradient(to right, #39ff14, #00d4a0)"
-              ></div>
-              <span
-                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
-                >Toxique</span
-              >
-            </label>
-            <label
-              class="cursor-pointer flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
-            >
-              <input
-                type="radio"
-                name="color-theme"
-                value="synthwave"
-                class="hidden"
-              />
-              <div
-                class="w-5 h-5 rounded-full transition-transform duration-200"
-                style="background: linear-gradient(to right, #ff00ff, #00ffff)"
-              ></div>
-              <span
-                class="text-[11px] font-bold text-gray-300 uppercase tracking-wide"
-                >Synthwave</span
-              >
-            </label>
-          </div>
-        </div>
+        <h3 id="settings-title">Préférences</h3>
 
         <!-- Mode Sombre / Clair -->
-        <div class="flex items-center justify-between settings-section">
-          <span
-            class="text-white font-bold tracking-widest uppercase text-sm font-display"
-            id="theme-label"
-            >Mode Sombre 🌙</span
-          >
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="theme-toggle" class="sr-only peer" />
-            <div
-              class="w-14 h-7 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all toggle-track"
-            ></div>
-          </label>
+        <div class="settings-section">
+          <span class="settings-section-label" id="theme-label">Mode Sombre 🌙</span>
+          <div class="toggle-row">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="theme-toggle" />
+              <div class="toggle-track"></div>
+            </label>
+          </div>
         </div>
 
         <!-- Intro Splash -->
-        <div class="flex items-center justify-between settings-section mt-4">
-          <span
-            class="text-white font-bold tracking-widest uppercase text-sm font-display"
-            id="intro-label"
-            >Intro au refresh ✨</span
-          >
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="intro-toggle" class="sr-only peer" />
-            <div
-              class="w-14 h-7 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all toggle-track"
-            ></div>
-          </label>
+        <div class="settings-section">
+          <span class="settings-section-label" id="intro-label">Intro à chaque visite ✨</span>
+          <div class="toggle-row">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="intro-toggle" />
+              <div class="toggle-track"></div>
+            </label>
+          </div>
         </div>
 
-        <!-- Rafraichir Dates GitHub -->
-        <div class="flex flex-col gap-3 settings-section mt-4">
-          <div class="flex items-center justify-between gap-3">
+        <!-- GitHub Dates -->
+        <div class="settings-section">
+          <div class="flex items-center justify-between gap-3" style="margin-bottom: .5rem">
             <div class="flex items-center gap-2">
-              <span
-                class="w-2 h-2 rounded-full bg-gray-500"
-                id="github-dot"
-              ></span>
-              <span
-                class="text-white font-bold tracking-widest uppercase text-sm font-display"
-                >Dates GitHub</span
-              >
+              <span id="github-dot"></span>
+              <span class="settings-section-label" style="margin-bottom: 0">Dates GitHub</span>
             </div>
-            <button
-              id="refresh-repo-dates"
-              type="button"
-              class="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-300 hover:bg-white/10 transition-colors"
-            >
-              Forcer refresh
-            </button>
+            <button id="refresh-repo-dates" type="button">Forcer refresh</button>
           </div>
-          <p
-            id="refresh-repo-dates-status"
-            class="text-xs text-gray-400"
-            aria-live="polite"
-          >
-            Récupère la date du dernier commit de chaque projet via l'API
-            GitHub.
-          </p>
-          <p id="refresh-repo-dates-last" class="text-[10px] text-gray-600"></p>
+          <p id="refresh-repo-dates-status" aria-live="polite">Récupère la date du dernier commit de chaque projet via l'API GitHub.</p>
+          <p id="refresh-repo-dates-last"></p>
         </div>
       </div>
     </div>
 
-    <!-- Contenu Principal -->
-    <main
-      id="main-content"
-      class="relative z-10 w-full max-w-6xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-16 opacity-0"
-    >
-      <!-- HEADER / HERO -->
-      <header class="flex flex-col items-center text-center gap-6">
-        <h1
-          class="text-6xl md:text-8xl font-black font-display text-gradient tracking-tighter drop-shadow-2xl"
-        >
-          KSOS
-        </h1>
-        <p
-          class="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm max-w-lg leading-relaxed"
-        >
-          Collectif de développeurs <br />
-          Projets réunis en un seul endroit
-        </p>
-
-        <!-- Membres (Générés par JS) -->
-        <div
-          class="flex flex-wrap justify-center gap-3 mt-4"
-          id="members-container"
-        ></div>
+    <!-- Main Content -->
+    <main id="main-content" class="opacity-0">
+      <!-- HERO -->
+      <header class="ksos-header">
+        <h1 class="ksos-logo text-gradient">KSOS</h1>
+        <p class="ksos-subtitle">Un collectif réunionnais qui crée des jeux, des outils et des expériences web.</p>
+        <div class="ksos-divider" aria-hidden="true"><span>KSOS / 974</span></div>
+        <div id="members-container"></div>
       </header>
-      <!-- BARRE DE FILTRES GLOBALE -->
-      <div
-        id="global-controls"
-        class="flex items-start md:items-center gap-3 bg-black/20 border border-white/10 rounded-2xl p-3"
-      >
-        <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
-          <label for="global-sort">Trier</label>
-          <select id="global-sort">
-            <option value="default">Ordre original</option>
-            <option value="title">Titre</option>
-            <option value="author">Auteur</option>
-            <option value="recent">Plus récent</option>
-          </select>
 
-          <label for="global-author-filter">Auteur</label>
-          <select id="global-author-filter">
-            <option value="all">Tous</option>
-          </select>
-
-          <label for="global-search">Recherche</label>
-          <input
-            id="global-search"
-            type="search"
-            placeholder="Titre ou description"
-          />
-
-          <button id="global-order-toggle" type="button" aria-pressed="false">
-            Ordre: Asc
-          </button>
-
-          <button
-            id="global-favorites-only-toggle"
-            type="button"
-            aria-pressed="false"
-          >
-            ⭐ Favoris seuls
-          </button>
+      <!-- FAVORITES -->
+      <section id="favorites-section">
+        <div class="orn-divider reveal" aria-hidden="true"><span>❧ ✦ ❧</span></div>
+        <div class="reveal">
+          <span class="s-eyebrow">// Favoris</span>
+          <h2 class="s-title">Favoris</h2>
         </div>
+        <div id="global-controls">
+          <div>
+            <label for="global-sort">Trier</label>
+            <select id="global-sort">
+              <option value="default">Ordre original</option>
+              <option value="title">Titre</option>
+              <option value="author">Auteur</option>
+              <option value="recent">Plus récent</option>
+            </select>
 
-        <button id="global-reset-filters" type="button">Réinitialiser</button>
-      </div>
+            <label for="global-author-filter">Auteur</label>
+            <select id="global-author-filter">
+              <option value="all">Tous</option>
+            </select>
 
-      <!-- SECTION FAVORIS -->
-      <section id="favorites-section" class="flex flex-col gap-8">
-        <div class="flex items-center gap-6">
-          <h2
-            class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white"
-          >
-            Favoris
-          </h2>
-          <div
-            class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"
-          ></div>
+            <label for="global-search">Recherche</label>
+            <input id="global-search" type="search" placeholder="Titre ou description" />
+
+            <button id="global-order-toggle" type="button" aria-pressed="false">Ordre: Asc</button>
+            <button id="global-favorites-only-toggle" type="button" aria-pressed="false">⭐ Favoris seuls</button>
+          </div>
+          <button id="global-reset-filters" type="button">Réinitialiser</button>
         </div>
-        <p id="favorites-recent-note" class="text-xs text-gray-500 hidden">
-          Astuce: ajoute un champ <code>createdAt</code> dans
-          <code>data.json</code> pour trier par date recente.
+        <p id="favorites-recent-note" class="hidden" style="font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Astuce: ajoute un champ <code>createdAt</code> dans <code>data.json</code> pour trier par date récente.
         </p>
-        <p
-          id="favorites-results-count"
-          class="text-xs font-bold uppercase tracking-wider text-gray-400"
-        ></p>
+        <p id="favorites-results-count" style="font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem;"></p>
         <div class="bento-grid" id="favorites-container"></div>
       </section>
 
-      <!-- SECTION JEUX -->
-      <section id="games-section" class="flex flex-col gap-8">
-        <div class="flex items-center gap-6">
-          <h2
-            class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white"
-          >
-            Jeux
-          </h2>
-          <div
-            class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"
-          ></div>
+      <!-- GAMES -->
+      <section id="games-section">
+        <div class="orn-divider reveal" aria-hidden="true"><span>❧ ✦ ❧</span></div>
+        <div class="reveal">
+          <span class="s-eyebrow">// 01</span>
+          <h2 class="s-title">Jeux</h2>
         </div>
-        <p id="games-recent-note" class="text-xs text-gray-500 hidden">
-          Astuce: ajoute un champ <code>createdAt</code> dans
-          <code>data.json</code>
-          pour trier par date recente.
+        <p id="games-recent-note" class="hidden" style="font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Astuce: ajoute un champ <code>createdAt</code> dans <code>data.json</code> pour trier par date récente.
         </p>
-        <p
-          id="games-results-count"
-          class="text-xs font-bold uppercase tracking-wider text-gray-400"
-        ></p>
+        <p id="games-results-count" style="font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem;"></p>
         <div class="bento-grid" id="games-container"></div>
       </section>
 
-      <!-- SECTION OUTILS & PROJETS PERSO -->
-      <section id="projects-section" class="flex flex-col gap-8">
-        <div class="flex items-center gap-6">
-          <h2
-            class="text-xl md:text-2xl font-black font-display uppercase tracking-widest text-white"
-          >
-            Outils
-          </h2>
-          <div
-            class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"
-          ></div>
+      <!-- PROJECTS -->
+      <section id="projects-section">
+        <div class="orn-divider reveal" aria-hidden="true"><span>❧ ✦ ❧</span></div>
+        <div class="reveal">
+          <span class="s-eyebrow">// 02</span>
+          <h2 class="s-title">Outils</h2>
         </div>
-        <p id="projects-recent-note" class="text-xs text-gray-500 hidden">
-          Astuce: ajoute un champ <code>createdAt</code> dans
-          <code>data.json</code> pour trier par date recente.
+        <p id="projects-recent-note" class="hidden" style="font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Astuce: ajoute un champ <code>createdAt</code> dans <code>data.json</code> pour trier par date récente.
         </p>
-        <p
-          id="projects-results-count"
-          class="text-xs font-bold uppercase tracking-wider text-gray-400"
-        ></p>
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6"
-          id="projects-container"
-        ></div>
+        <p id="projects-results-count" style="font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem;"></p>
+        <div id="projects-container"></div>
       </section>
 
       <!-- FOOTER -->
-      <footer
-        class="mt-8 py-8 border-t border-white/10 text-center relative z-10"
-      >
-        <p
-          class="text-xs font-bold uppercase tracking-widest text-gray-500 font-display mb-3"
-        >
-          © <span id="current-year"></span> KSOS
-        </p>
-        <div
-          class="flex justify-center flex-wrap gap-4 text-xs font-bold text-gray-600"
-          id="footer-links"
-        ></div>
+      <footer>
+        <p class="footer-copy">© <span id="current-year"></span> KSOS · La Réunion</p>
+        <span class="footer-orn" aria-hidden="true">❧</span>
+        <div id="footer-links"></div>
       </footer>
     </main>
+
+    <button class="back-to-top" id="back-to-top" aria-label="Retour en haut">↑</button>
 
     <script src="./app.min.js"></script>
     <script>
@@ -462,6 +194,108 @@
           navigator.serviceWorker.register("./sw.js").catch(() => {});
         });
       }
+    </script>
+    <script>
+      /* --- PORTFOLIO EFFECTS --- */
+      const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (!rm) {
+        /* CURSOR FOLLOWER */
+        const cursor = document.getElementById("cursor-follower");
+        if (cursor) {
+          let cx = window.innerWidth / 2, cy = window.innerHeight / 2, tx = cx, ty = cy;
+          document.addEventListener("mousemove", (e) => { tx = e.clientX; ty = e.clientY; cursor.classList.add("visible"); });
+          document.addEventListener("mouseleave", () => cursor.classList.remove("visible"));
+          (function anim() {
+            cx += (tx - cx) * .08;
+            cy += (ty - cy) * .08;
+            cursor.style.left = cx + "px";
+            cursor.style.top = cy + "px";
+            requestAnimationFrame(anim);
+          })();
+        }
+
+        /* PARTICLES */
+        const cvs = document.createElement("canvas");
+        cvs.id = "particles-canvas";
+        document.body.prepend(cvs);
+        const ctx = cvs.getContext("2d");
+        let w, h, pts = [];
+        function resize() { w = cvs.width = innerWidth; h = cvs.height = innerHeight; }
+        resize();
+        window.addEventListener("resize", resize);
+        for (let i = 0; i < 50; i++) {
+          pts.push({
+            x: Math.random() * w, y: Math.random() * h,
+            r: Math.random() * 1.4 + .3,
+            dx: (Math.random() - .5) * .15, dy: (Math.random() - .5) * .15,
+            o: Math.random() * .35 + .1, phase: Math.random() * Math.PI * 2
+          });
+        }
+        (function draw(t) {
+          ctx.clearRect(0, 0, w, h);
+          for (const p of pts) {
+            p.x += p.dx; p.y += p.dy;
+            if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+            if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+            const tw = Math.sin(t * .001 + p.phase) * .3 + .7;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(201,169,110,${p.o * tw})`;
+            ctx.fill();
+          }
+          requestAnimationFrame(draw);
+        })();
+
+        /* MAGNETIC BUTTONS */
+        document.querySelectorAll(".btn, #global-controls button, #settings-notch").forEach((btn) => {
+          btn.addEventListener("mousemove", (e) => {
+            const r = btn.getBoundingClientRect();
+            const x = e.clientX - r.left - r.width / 2;
+            const y = e.clientY - r.top - r.height / 2;
+            const d = Math.sqrt(x * x + y * y);
+            const s = Math.min(6, d * .1);
+            const a = Math.atan2(y, x);
+            btn.style.transform = `translate(${Math.cos(a) * s}px,${Math.sin(a) * s}px)`;
+          });
+          btn.addEventListener("mouseleave", () => { btn.style.transform = ""; });
+        });
+      }
+
+      /* SCROLL REVEAL */
+      let revealCounter = 0;
+      const reveals = document.querySelectorAll(".reveal");
+      const revealIo = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              const delay = revealCounter * 90;
+              revealCounter++;
+              setTimeout(() => e.target.classList.add("in"), delay);
+              revealIo.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: "0px 0px -30px 0px" }
+      );
+      reveals.forEach((el) => revealIo.observe(el));
+
+      /* SCROLL PROGRESS */
+      const progressBar = document.getElementById("scroll-progress");
+      window.addEventListener("scroll", () => {
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        progressBar.style.width = scrollHeight > 0 ? (scrollTop / scrollHeight * 100) + "%" : "0%";
+      }, { passive: true });
+
+      /* BACK TO TOP */
+      const backTop = document.getElementById("back-to-top");
+      window.addEventListener("scroll", () => {
+        backTop.classList.toggle("visible", window.scrollY > 600);
+      }, { passive: true });
+      backTop.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
     </script>
   </body>
 </html>
