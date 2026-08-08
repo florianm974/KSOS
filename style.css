@@ -372,24 +372,6 @@ a.card-title:hover {
   flex: 1;
 }
 
-.card-techs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tech-chip {
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-}
-
 .card-bottom {
   display: flex;
   align-items: center;

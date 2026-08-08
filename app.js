@@ -144,22 +144,6 @@ function createMemberBadge(member) {
   return anchor;
 }
 
-function createTechIcons() {
-  return {
-    html: "🌐",
-    css: "🎨",
-    javascript: "⚡",
-    react: "⚛️",
-    vue: "🟢",
-    python: "🐍",
-    node: "🟩",
-    godot: "🤖",
-    svelte: "🟢",
-    typescript: "📘",
-    tailwind: "🌊",
-  };
-}
-
 function formatDate(timestamp) {
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
@@ -255,27 +239,15 @@ function createCard(item) {
     meta.appendChild(datePill);
   }
 
+  const techs = Array.isArray(item.techs) ? item.techs : [];
   const desc = document.createElement("p");
   desc.className = "card-desc";
   desc.textContent = item.desc || "";
-  card.appendChild(desc);
-
-  const techs = Array.isArray(item.techs) ? item.techs : [];
   if (techs.length > 0) {
-    const icons = createTechIcons();
-    const techList = document.createElement("div");
-    techList.className = "card-techs";
-    techs.forEach((tech) => {
-      const chip = document.createElement("span");
-      chip.className = "tech-chip";
-      const icon = icons[String(tech).toLowerCase().trim()];
-      chip.innerHTML = icon
-        ? `<span aria-hidden="true">${icon}</span> ${tech}`
-        : String(tech);
-      techList.appendChild(chip);
-    });
-    card.appendChild(techList);
+    const sep = desc.textContent ? " — " : "";
+    desc.textContent += sep + techs.join(" · ");
   }
+  card.appendChild(desc);
 
   const bottom = document.createElement("div");
   bottom.className = "card-bottom";
