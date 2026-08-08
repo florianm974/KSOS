@@ -110,7 +110,7 @@
       "icon": "⚙️",
       "tagText": "Outil IA",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #8b5cf6 0%, #312e81 55%, #141024 100%)"
+      "gradient": "linear-gradient(135deg, #e5483d 0%, #8a1f16 55%, #0d2240 100%)"
     }
   ]
 }

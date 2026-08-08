@@ -36,7 +36,7 @@ Chaque entrée référence le lien GitHub du projet et sa page live ; la date du
 
 ## Fonctionnalités
 
-- Une page, un thème dark or/violet, sans fioritures
+- Une page, un thème dark inspiré du drapeau de La Réunion (bleu océan, rouge volcan, or soleil), sans fioritures
 - Recherche instantanée (titre, description, auteur, technologie)
 - Cartes uniformes avec badge de catégorie et date du dernier push
 - Date de dernier commit récupérée via l'API GitHub (mise en cache 12 h)

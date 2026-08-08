@@ -1,20 +1,23 @@
 /* ==========================================================================
    KSOS — Portail de jeux & projets
-   Thème unique dark, accents or/violet. Polices Outfit + Space Grotesk.
+   Thème unique dark inspiré du drapeau de La Réunion :
+   bleu océan, rouge volcan (Piton de la Fournaise), or soleil.
+   Polices Outfit + Space Grotesk.
    ========================================================================== */
 
 :root {
-  --bg: #0b0a12;
-  --bg-soft: #12101d;
-  --surface: #16141f;
-  --surface-2: #1d1a29;
+  --bg: #071226;
+  --bg-soft: #0a1c38;
+  --surface: #0d2240;
+  --surface-2: #122c52;
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
-  --gold: #c9a96e;
-  --violet: #8b5cf6;
-  --text: #e7e5ee;
-  --text-dim: #9b98ad;
-  --text-faint: #6f6c83;
+  --gold: #f0b429;
+  --volcano: #e5483d;
+  --ocean: #4aa3e0;
+  --text: #e8eef8;
+  --text-dim: #9db1cc;
+  --text-faint: #6b7f9c;
   --radius: 14px;
   --font-display: "Outfit", sans-serif;
   --font-body: "Space Grotesk", sans-serif;
@@ -39,15 +42,15 @@ body {
   min-height: 100vh;
 }
 
-/* Halo décoratif discret, non animé */
+/* Halo décoratif discret : lave du volcan + soleil levant sur l'océan */
 .bg-glow {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(900px 500px at 80% -10%, rgba(139, 92, 246, 0.14), transparent 60%),
-    radial-gradient(700px 420px at 5% 110%, rgba(201, 169, 110, 0.1), transparent 60%);
+    radial-gradient(900px 500px at 80% -10%, rgba(229, 72, 61, 0.16), transparent 60%),
+    radial-gradient(700px 420px at 5% 110%, rgba(240, 180, 41, 0.12), transparent 60%);
 }
 
 .container {
@@ -61,8 +64,36 @@ body {
    -------------------------------------------------------------------------- */
 
 .hero {
+  position: relative;
   text-align: center;
   padding: 32px 0 40px;
+}
+
+/* Soleil rayonnant, clin d'œil au drapeau de La Réunion */
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(240, 180, 41, 0.07) 0deg 8deg,
+      transparent 8deg 16deg
+    );
+  -webkit-mask-image: radial-gradient(circle, black 0%, transparent 68%);
+  mask-image: radial-gradient(circle, black 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-title {
@@ -71,7 +102,7 @@ body {
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.02em;
-  background: linear-gradient(120deg, var(--gold) 20%, var(--violet) 90%);
+  background: linear-gradient(120deg, var(--gold) 20%, var(--volcano) 90%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -155,8 +186,8 @@ body {
 }
 
 .search-wrap input:focus {
-  border-color: rgba(201, 169, 110, 0.45);
-  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.12);
+  border-color: rgba(240, 180, 41, 0.45);
+  box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.12);
 }
 
 /* --------------------------------------------------------------------------
@@ -225,7 +256,7 @@ body {
 }
 
 .card:hover {
-  border-color: rgba(139, 92, 246, 0.4);
+  border-color: rgba(229, 72, 61, 0.4);
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
@@ -315,8 +346,8 @@ a.card-title:hover {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--gold);
-  background: rgba(201, 169, 110, 0.1);
-  border: 1px solid rgba(201, 169, 110, 0.25);
+  background: rgba(240, 180, 41, 0.1);
+  border: 1px solid rgba(240, 180, 41, 0.25);
 }
 
 .card-date {
@@ -383,7 +414,7 @@ a.card-title:hover {
 }
 
 .card-link:hover {
-  color: var(--violet);
+  color: var(--volcano);
 }
 
 .empty-state {
@@ -427,8 +458,8 @@ a.card-title:hover {
 
 .chip.is-active {
   color: var(--gold);
-  background: rgba(201, 169, 110, 0.12);
-  border-color: rgba(201, 169, 110, 0.45);
+  background: rgba(240, 180, 41, 0.12);
+  border-color: rgba(240, 180, 41, 0.45);
 }
 
 /* --------------------------------------------------------------------------
@@ -569,7 +600,7 @@ a.card-title:hover {
    -------------------------------------------------------------------------- */
 
 :focus-visible {
-  outline: 2px solid var(--violet);
+  outline: 2px solid var(--volcano);
   outline-offset: 2px;
 }
 
