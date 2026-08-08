@@ -1,9 +1,21 @@
 {
   "members": [
-    { "name": "fall974", "github": "fall974" },
-    { "name": "AlbarKun222", "github": "AlbarKun222" },
-    { "name": "Infinity974", "github": "Infinity974" },
-    { "name": "florianm974", "github": "florianm974" }
+    {
+      "name": "fall974",
+      "github": "fall974"
+    },
+    {
+      "name": "AlbarKun222",
+      "github": "AlbarKun222"
+    },
+    {
+      "name": "Infinity974",
+      "github": "Infinity974"
+    },
+    {
+      "name": "florianm974",
+      "github": "florianm974"
+    }
   ],
   "games": [
     {
@@ -16,8 +28,12 @@
       "desc": "Le célèbre jeu d'ambiance adapté sur navigateur en multijoueur. Le Boss propose une phrase à trou, et les autres joueurs doivent la compléter avec leur réponse la plus décalée !",
       "icon": "🥥",
       "tagText": "Party game",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #7a2f8f 0%, #2b1040 60%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #7c5a86 0%, #3a2c45 55%, #0e1626 100%)"
     },
     {
       "id": "fall974-le-petit-bac",
@@ -29,8 +45,12 @@
       "desc": "Adaptation du célèbre jeu de société. Trouvez des mots commençant par la bonne lettre dans chaque catégorie avant la fin du temps imparti.",
       "icon": "🔤",
       "tagText": "Quiz",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #4f46e5 0%, #1e1b4b 60%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #5a6ba8 0%, #2b3358 55%, #0e1626 100%)"
     },
     {
       "id": "albarkun222-vroomdle",
@@ -42,8 +62,12 @@
       "desc": "Jeu de devinettes sur le thème de l'automobile, dans l'esprit Wordle. Identifiez la voiture mystère en un minimum d'essais.",
       "icon": "🏎️",
       "tagText": "Déduction",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #0f766e 0%, #134e4a 55%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #3f7d77 0%, #1f3d3a 55%, #0e1626 100%)"
     },
     {
       "id": "albarkun222-allverse",
@@ -55,8 +79,12 @@
       "desc": "Jeu de cartes TCG gacha. Faites des tirages, collectionnez des cartes par rareté, améliorez votre puissance et débloquez des récompenses !",
       "icon": "🃏",
       "tagText": "TCG",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #059669 0%, #064e3b 55%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #4f8a72 0%, #24463a 55%, #0e1626 100%)"
     },
     {
       "id": "infinity974-undercover",
@@ -68,8 +96,12 @@
       "desc": "Adaptation du jeu Undercover. Chaque joueur reçoit un mot secret — les agents infiltrés doivent se fondre dans la masse sans se faire démasquer.",
       "icon": "🕵️",
       "tagText": "Party game",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #c2410c 0%, #431407 55%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #b5713f 0%, #5c3a20 55%, #0e1626 100%)"
     },
     {
       "id": "infinity974-top-ten",
@@ -81,8 +113,12 @@
       "desc": "Le jeu de l'échelle infernale en multijoueur temps réel. Recevez un numéro secret de 1 à 10, répondez au thème selon votre intensité, et laissez le Cap'ten tout classer dans le bon ordre !",
       "icon": "🔟",
       "tagText": "Party game",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #0891b2 0%, #164e63 55%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #3d7d9c 0%, #1c3c4d 55%, #0e1626 100%)"
     },
     {
       "id": "infinity974-redflag",
@@ -94,8 +130,12 @@
       "desc": "Le party game où séduire, c'est survivre. Un mélange UNO + Exploding Kittens + Cards Against Humanity. 4 à 8 joueurs, 3 niveaux de bots et ~165 cartes.",
       "icon": "🚩",
       "tagText": "Party game",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #dc2626 0%, #450a0a 55%, #141024 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #a8503f 0%, #4a2620 55%, #0e1626 100%)"
     }
   ],
   "projects": [
@@ -109,8 +149,12 @@
       "desc": "Outil de prompt engineering pour concevoir, tester et affiner des prompts IA de manière structurée et reproductible.",
       "icon": "⚙️",
       "tagText": "Outil IA",
-      "techs": ["HTML", "CSS", "JavaScript"],
-      "gradient": "linear-gradient(135deg, #e5483d 0%, #8a1f16 55%, #0d2240 100%)"
+      "techs": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "gradient": "linear-gradient(135deg, #bf6b55 0%, #5c2a22 55%, #0e1626 100%)"
     }
   ]
 }
