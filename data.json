@@ -49,6 +49,20 @@
       "badgeClass": "bg-teal-500/10 text-teal-400 border-teal-500/20"
     },
     {
+      "id": "albarkun222-allverse",
+      "title": "AllVerse",
+      "author": "AlbarKun222",
+      "createdAt": "2026-04-20",
+      "url": "https://albarkun222.github.io/AllVerse/",
+      "github": "https://github.com/AlbarKun222/AllVerse",
+      "desc": "Jeu de cartes TCG gacha. Faites des tirages, collectionnez des cartes par rareté, améliorez votre puissance et débloquez des récompenses !",
+      "icon": "🃏",
+      "tagText": "TCG",
+      "techs": ["HTML", "CSS", "JavaScript"],
+      "hoverClass": "group-hover:text-emerald-400",
+      "badgeClass": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    },
+    {
       "id": "infinity974-undercover",
       "title": "Undercover",
       "author": "Infinity974",
@@ -77,15 +91,15 @@
       "badgeClass": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
     },
     {
-      "id": "infinity974-mamie-moule-maki",
-      "title": "Mamie Moule Maki",
+      "id": "infinity974-redflag",
+      "title": "RedFlag",
       "author": "Infinity974",
-      "createdAt": "2026-04-20",
-      "url": "https://Infinity974.github.io/Mamie-Moule-Maki/",
-      "github": "https://github.com/Infinity974/Mamie-Moule-Maki",
-      "desc": "Le célèbre jeu du petit bac revisité. Mamie tire une lettre au sort, trouvez des mots originaux commençant par cette lettre avant la fin du temps imparti !",
-      "icon": "👵",
-      "tagText": "Arcade",
+      "createdAt": "2026-05-16",
+      "url": "https://Infinity974.github.io/redflag/",
+      "github": "https://github.com/Infinity974/redflag",
+      "desc": "Le party game où séduire, c'est survivre. Un mélange UNO + Exploding Kittens + Cards Against Humanity. 4 à 8 joueurs, 3 niveaux de bots et ~165 cartes.",
+      "icon": "🚩",
+      "tagText": "Party game",
       "techs": ["HTML", "CSS", "JavaScript"],
       "hoverClass": "group-hover:text-red-400",
       "badgeClass": "bg-red-500/10 text-red-400 border-red-500/20"

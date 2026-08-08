@@ -23,6 +23,28 @@ Portail collectif du groupe de dev KSOS — jeux et projets personnels réunis e
 
 ---
 
+## Jeux & projets
+
+Le contenu est entièrement piloté par [`data.json`](data.json) :
+
+- **Jeux** : Blanc Manger Coco, Le Petit Bac, VroomDle, AllVerse, Undercover, Top Ten, RedFlag
+- **Outils** : Prompt Forge
+
+Chaque entrée référence le lien GitHub du projet et sa page live ; la date du dernier commit est récupérée via l'API GitHub.
+
+---
+
+## Fonctionnalités
+
+- Bento grid triable (titre, auteur, récent) et filtrable (auteur, recherche, favoris)
+- Favoris persistés dans `localStorage`
+- 4 thèmes visuels (Signature, Cyberpunk, Toxique, Synthwave) + mode clair/sombre
+- Splash screen d'intro désactivable
+- Service Worker pour l'accès hors-ligne
+- Dates des repos mises en cache et actualisables (bouton « Forcer refresh »)
+
+---
+
 ## Licence
 
 MIT — voir [LICENSE](LICENSE)

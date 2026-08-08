@@ -1,0 +1,14 @@
+# OS
+Thumbs.db
+.DS_Store
+
+# Éditeurs
+.idea/
+.vscode/
+
+# npm (historique — non utilisé en production)
+node_modules/
+package-lock.json
+
+# Divers
+*.log
