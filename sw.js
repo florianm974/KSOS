@@ -1,11 +1,11 @@
-// sw.js — KSOS Service Worker v3
-const CACHE_NAME = "ksos-cache-v3";
+// sw.js — KSOS Service Worker v4
+const CACHE_NAME = "ksos-cache-v4";
 const STATIC_ASSETS = [
   "/KSOS/",
   "/KSOS/index.html",
   "/KSOS/style.css",
   "/KSOS/data.json",
-  "/KSOS/app.min.js",
+  "/KSOS/app.js",
 ];
 
 self.addEventListener("install", (event) => {

@@ -1,31 +1,43 @@
+// KSOS — Portail de jeux & projets (app.js)
+"use strict";
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const AVATAR_FALLBACK =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%2312101d'/%3E%3Cpath d='M32 34c8.3 0 15 6.7 15 15H17c0-8.3 6.7-15 15-15zm0-18a9 9 0 110 18 9 9 0 010-18z' fill='%239b98ad'/%3E%3C/svg%3E";
+
 const REPO_DATE_CACHE_KEY = "ksosRepoDatesCacheV1";
 const REPO_DATE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const NEW_ITEM_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
 
-async function fetchAppData() {
-  const response = await fetch("./data.json", { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error("Impossible de charger data.json");
-  }
-  return response.json();
+function clearElement(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+function safeExternalUrl(url) {
+  try {
+    const parsed = new URL(url, window.location.href);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return parsed.href;
+    }
+  } catch (_) {}
+  return "#";
+}
+
+function parseItemDate(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? null : timestamp;
 }
 
 function extractGithubRepoSlug(url) {
   try {
     const parsed = new URL(url);
-    if (
-      parsed.hostname !== "github.com" &&
-      parsed.hostname !== "www.github.com"
-    ) {
+    if (parsed.hostname !== "github.com" && parsed.hostname !== "www.github.com") {
       return null;
     }
     const segments = parsed.pathname.split("/").filter(Boolean);
     if (segments.length < 2) return null;
-
-    const owner = segments[0];
-    const repo = segments[1].replace(/\.git$/i, "");
-    if (!owner || !repo) return null;
-
-    return `${owner}/${repo}`;
+    return `${segments[0]}/${segments[1].replace(/\.git$/i, "")}`;
   } catch (_) {
     return null;
   }
@@ -33,9 +45,7 @@ function extractGithubRepoSlug(url) {
 
 function readRepoDateCache() {
   try {
-    const raw = localStorage.getItem(REPO_DATE_CACHE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(localStorage.getItem(REPO_DATE_CACHE_KEY) || "{}");
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch (_) {
     return {};
@@ -45,37 +55,7 @@ function readRepoDateCache() {
 function writeRepoDateCache(cache) {
   try {
     localStorage.setItem(REPO_DATE_CACHE_KEY, JSON.stringify(cache));
-  } catch (_) {
-    // Ignore storage write failures.
-  }
-}
-
-function clearRepoDateCache() {
-  try {
-    localStorage.removeItem(REPO_DATE_CACHE_KEY);
-  } catch (_) {
-    // Ignore storage remove failures.
-  }
-}
-
-const REPO_FAIL_CACHE_TTL_MS = 60 * 60 * 1000; // 1 heure avant de réessayer un échec
-
-function getCachedRepoDate(cache, slug) {
-  const entry = cache[slug];
-  if (!entry || !entry.fetchedAt) {
-    return null;
-  }
-  // Si c'est un échec récent, on ne réessaie pas
-  if (entry.failedAt) {
-    const isRecentFail =
-      Date.now() - Number(entry.failedAt) < REPO_FAIL_CACHE_TTL_MS;
-    return isRecentFail ? "FAILED" : null;
-  }
-  if (typeof entry.pushedAt !== "string") {
-    return null;
-  }
-  const isFresh = Date.now() - Number(entry.fetchedAt) < REPO_DATE_CACHE_TTL_MS;
-  return isFresh ? entry.pushedAt : null;
+  } catch (_) {}
 }
 
 async function fetchRepoPushedAt(slug) {
@@ -91,241 +71,36 @@ async function fetchRepoPushedAt(slug) {
   }
 }
 
-async function enrichItemsWithGithubDates(items, cache) {
-  const clonedItems = (items || []).map((item) => ({ ...item }));
-  const slugs = Array.from(
-    new Set(
-      clonedItems
-        .map((item) => extractGithubRepoSlug(item.github))
-        .filter(Boolean),
-    ),
-  );
+async function enrichWithGithubDate(item, cache) {
+  const slug = extractGithubRepoSlug(item.github);
+  if (!slug) return item;
 
-  const datesBySlug = {};
-  const missingSlugs = [];
+  const entry = cache[slug];
+  const cachedDate =
+    entry &&
+    typeof entry.pushedAt === "string" &&
+    Date.now() - Number(entry.fetchedAt) < REPO_DATE_CACHE_TTL_MS
+      ? entry.pushedAt
+      : null;
 
-  slugs.forEach((slug) => {
-    const cachedDate = getCachedRepoDate(cache, slug);
-    if (cachedDate === "FAILED") {
-      return; // Ne pas réessayer tout de suite
-    }
-    if (cachedDate) {
-      datesBySlug[slug] = cachedDate;
-    } else {
-      missingSlugs.push(slug);
-    }
-  });
+  if (cachedDate) {
+    return { ...item, pushedAt: cachedDate };
+  }
 
-  const fetchedEntries = await Promise.all(
-    missingSlugs.map(async (slug) => {
-      const pushedAt = await fetchRepoPushedAt(slug);
-      return { slug, pushedAt };
-    }),
-  );
-
-  fetchedEntries.forEach(({ slug, pushedAt }) => {
-    if (!pushedAt) {
-      // Stocker l'échec pour éviter de re-fetcher trop souvent
-      cache[slug] = { failedAt: Date.now(), fetchedAt: Date.now() };
-      return;
-    }
-    datesBySlug[slug] = pushedAt;
+  const pushedAt = await fetchRepoPushedAt(slug);
+  if (pushedAt) {
     cache[slug] = { pushedAt, fetchedAt: Date.now() };
-  });
-
-  return clonedItems.map((item) => {
-    const slug = extractGithubRepoSlug(item.github);
-    const pushedAt = slug ? datesBySlug[slug] : null;
-    if (!pushedAt) return item;
-
-    return { ...item, updatedAt: pushedAt };
-  });
-}
-
-async function enrichAppDataWithGithubDates(appData) {
-  const cache = readRepoDateCache();
-  const games = await enrichItemsWithGithubDates(appData.games || [], cache);
-  const projects = await enrichItemsWithGithubDates(
-    appData.projects || [],
-    cache,
-  );
-
-  writeRepoDateCache(cache);
-
-  return { ...appData, games, projects };
-}
-function parseItemDate(value) {
-  if (typeof value !== "string" || !value.trim()) return null;
-  const timestamp = Date.parse(value);
-  return Number.isNaN(timestamp) ? null : timestamp;
-}
-
-// 7 jours en millisecondes
-const NEW_ITEM_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
-
-function isItemNew(item) {
-  const created = parseItemDate(item.createdAt);
-  if (created === null) return false;
-  return Date.now() - created <= NEW_ITEM_THRESHOLD_MS;
-}
-
-function getItemTimestamp(item) {
-  const createdTime = parseItemDate(item.createdAt);
-  const updatedTime = parseItemDate(item.updatedAt);
-
-  // Si l'item est nouveau (< 7 jours) → afficher createdAt
-  if (isItemNew(item) && createdTime !== null) {
-    return createdTime;
+    writeRepoDateCache(cache);
+    return { ...item, pushedAt };
   }
 
-  // Si l'item est vieux (>= 7 jours) → afficher updatedAt (dernier push)
-  if (updatedTime !== null) {
-    return updatedTime;
-  }
-
-  // Fallback : createdAt
-  return createdTime || parseItemDate(item.date);
-}
-
-function normalizeAuthorKey(author) {
-  return String(author || "")
-    .trim()
-    .toLowerCase();
-}
-
-function buildAuthorOptions(appData, itemCollectionKey) {
-  const catalog = new Map();
-
-  (appData.members || []).forEach((member) => {
-    const name = String(member.name || "").trim();
-    const key = normalizeAuthorKey(name);
-    if (key && !catalog.has(key)) {
-      catalog.set(key, name);
-    }
-  });
-
-  (appData[itemCollectionKey] || []).forEach((item) => {
-    const name = String(item.author || "").trim();
-    const key = normalizeAuthorKey(name);
-    if (key && !catalog.has(key)) {
-      catalog.set(key, name);
-    }
-  });
-
-  return Array.from(catalog.entries())
-    .map(([key, label]) => ({ key, label }))
-    .sort((a, b) =>
-      a.label.localeCompare(b.label, "fr", { sensitivity: "base" }),
-    );
-}
-
-function sortAndFilterItems(items, criteria, order, authorFilter, searchQuery) {
-  const normalizedFilter = normalizeAuthorKey(authorFilter || "all");
-
-  // 1. Filtrer par auteur en mappant l'index d'origine
-  let filtered = items
-    .map((item, index) => ({ ...item, __index: index }))
-    .filter((item) => {
-      const authorMatches =
-        normalizedFilter === "all" ||
-        normalizeAuthorKey(item.author) === normalizedFilter;
-      return authorMatches;
-    });
-
-  // 2. Recherche améliorée (accent insensible, fuzzy)
-  if (searchQuery && searchQuery.trim() !== "") {
-    const normalize = (s) =>
-      String(s)
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-    const terms = normalize(searchQuery)
-      .split(/\s+/)
-      .filter(Boolean);
-    filtered = filtered.filter((item) => {
-      const searchable = normalize(
-        [
-          item.title,
-          item.desc,
-          ...(Array.isArray(item.techs) ? item.techs : []),
-          item.author,
-          item.tagText,
-        ]
-          .filter(Boolean)
-          .join(" "),
-      );
-      return terms.every((term) => searchable.includes(term));
-    });
-  }
-
-  // 3. Tri
-  filtered.sort((a, b) => {
-    // Si on a une recherche, on garde l'ordre original (pertinence implicite)
-    if (searchQuery && searchQuery.trim() !== "" && criteria === "default") {
-      return 0;
-    }
-
-    if (criteria === "title") {
-      return (a.title || "").localeCompare(b.title || "", "fr", {
-        sensitivity: "base",
-      });
-    }
-
-    if (criteria === "author") {
-      const authorCompare = (a.author || "").localeCompare(
-        b.author || "",
-        "fr",
-        { sensitivity: "base" },
-      );
-      if (authorCompare !== 0) return authorCompare;
-      return (a.title || "").localeCompare(b.title || "", "fr", {
-        sensitivity: "base",
-      });
-    }
-
-    if (criteria === "recent") {
-      const timeA = getItemTimestamp(a);
-      const timeB = getItemTimestamp(b);
-
-      if (timeA === null && timeB === null) return a.__index - b.__index;
-      if (timeA === null) return 1;
-      if (timeB === null) return -1;
-      return timeB - timeA;
-    }
-
-    return a.__index - b.__index;
-  });
-
-  if (order === "desc") {
-    filtered.reverse();
-  }
-
-  return filtered;
-}
-const SVG_NS = "http://www.w3.org/2000/svg";
-const AVATAR_FALLBACK =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23121726'/%3E%3Cpath d='M32 34c8.3 0 15 6.7 15 15H17c0-8.3 6.7-15 15-15zm0-18a9 9 0 110 18 9 9 0 010-18z' fill='%23d1d5db'/%3E%3C/svg%3E";
-
-function safeExternalUrl(url) {
-  try {
-    const parsed = new URL(url, window.location.href);
-    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
-      return parsed.href;
-    }
-  } catch (_) {}
-  return "#";
-}
-
-function clearElement(node) {
-  while (node.firstChild) {
-    node.removeChild(node.firstChild);
-  }
+  return item;
 }
 
 function createGithubIcon() {
   const svg = document.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("width", "18");
-  svg.setAttribute("height", "18");
+  svg.setAttribute("width", "14");
+  svg.setAttribute("height", "14");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
@@ -333,7 +108,6 @@ function createGithubIcon() {
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
   svg.setAttribute("aria-hidden", "true");
-
   const path = document.createElementNS(SVG_NS, "path");
   path.setAttribute(
     "d",
@@ -343,123 +117,35 @@ function createGithubIcon() {
   return svg;
 }
 
-function createCardElement(item, options = {}) {
-  const isFavorite = Boolean(options.isFavorite);
-  const onToggleFavorite =
-    typeof options.onToggleFavorite === "function"
-      ? options.onToggleFavorite
-      : null;
+function createMemberBadge(member) {
+  const username = /^[a-zA-Z0-9-]{1,39}$/.test(member.github)
+    ? member.github
+    : null;
+  const anchor = document.createElement("a");
+  anchor.href = username ? `https://github.com/${username}` : "#";
+  anchor.target = "_blank";
+  anchor.rel = "noopener noreferrer";
+  anchor.className = "member-pill";
 
-  const card = document.createElement("article");
-  card.tabIndex = 0;
-  card.className =
-    "bg-darkCard group flex flex-col p-6 md:p-8 h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40";
+  const img = document.createElement("img");
+  img.src = username ? `https://github.com/${username}.png` : AVATAR_FALLBACK;
+  img.alt = `Avatar ${member.name || "membre"}`;
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.width = 30;
+  img.height = 30;
+  img.addEventListener("error", () => { img.src = AVATAR_FALLBACK; }, { once: true });
 
-  const header = document.createElement("div");
-  header.className = "flex items-start justify-between mb-4 relative z-10";
+  const span = document.createElement("span");
+  span.textContent = member.name || "Membre";
 
-  const headerLeft = document.createElement("div");
-  headerLeft.className = "flex items-center gap-4";
+  anchor.appendChild(img);
+  anchor.appendChild(span);
+  return anchor;
+}
 
-  const icon = document.createElement("div");
-  icon.className =
-    "w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300";
-  icon.setAttribute("aria-hidden", "true");
-  icon.textContent = item.icon || "🧩";
-
-  const titleWrapper = document.createElement("div");
-
-  const titleLink = document.createElement("a");
-  titleLink.href = safeExternalUrl(item.url);
-  titleLink.target = "_blank";
-  titleLink.rel = "noopener noreferrer";
-  titleLink.className = `text-xl md:text-2xl font-black font-display text-white ${item.hoverClass || ""} transition-colors leading-tight card-title-link before:absolute before:inset-0 before:z-0`;
-  titleLink.textContent = item.title || "Projet";
-
-  const byline = document.createElement("p");
-  byline.className =
-    "text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1";
-  byline.textContent = `par ${item.author || "inconnu"}`;
-
-  titleWrapper.appendChild(titleLink);
-  titleWrapper.appendChild(byline);
-  headerLeft.appendChild(icon);
-  headerLeft.appendChild(titleWrapper);
-  header.appendChild(headerLeft);
-
-  const headerRight = document.createElement("div");
-  headerRight.className = "flex items-center gap-2";
-
-  const favoriteButton = document.createElement("button");
-  favoriteButton.type = "button";
-  favoriteButton.className = "favorite-toggle";
-  favoriteButton.setAttribute(
-    "aria-label",
-    `${isFavorite ? "Retirer des" : "Ajouter aux"} favoris: ${item.title || "ce projet"}`,
-  );
-  favoriteButton.setAttribute("aria-pressed", String(isFavorite));
-  if (isFavorite) {
-    favoriteButton.classList.add("is-active");
-  }
-
-  const favoriteStar = document.createElement("span");
-  favoriteStar.className = "favorite-toggle-star";
-  favoriteStar.textContent = "★";
-  favoriteButton.appendChild(favoriteStar);
-
-  favoriteButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    favoriteButton.classList.remove("is-popping");
-    // Force reflow so rapid clicks replay the pop animation reliably.
-    void favoriteButton.offsetWidth;
-    favoriteButton.classList.add("is-popping");
-
-    if (onToggleFavorite) {
-      onToggleFavorite(item);
-    }
-  });
-
-  favoriteButton.addEventListener("animationend", () => {
-    favoriteButton.classList.remove("is-popping");
-  });
-
-  headerRight.appendChild(favoriteButton);
-
-  // Correction ici : On sépare la date d'affichage (updatedAt) de la date de création (createdAt)
-  const itemTimestamp = getItemTimestamp(item);
-
-  if (itemTimestamp !== null) {
-    const datePill = document.createElement("span");
-    const isNewItem = isItemNew(item);
-
-    datePill.className = isNewItem
-      ? "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-      : "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10";
-
-    datePill.textContent = isNewItem
-      ? "Nouveau"
-      : new Intl.DateTimeFormat("fr-FR", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }).format(itemTimestamp);
-    headerRight.appendChild(datePill);
-  }
-
-  header.appendChild(headerRight);
-
-  const description = document.createElement("p");
-  description.className =
-    "text-gray-400 text-sm md:text-base leading-relaxed flex-1 relative z-10 mb-4 pointer-events-none";
-  description.textContent = item.desc || "";
-
-  const techList = document.createElement("div");
-  techList.className = "flex flex-wrap gap-2 mb-6 relative z-10";
-
-  // Dictionnaire d'icônes par technologie
-  const techIcons = {
+function createTechIcons() {
+  return {
     html: "🌐",
     css: "🎨",
     javascript: "⚡",
@@ -472,1004 +158,415 @@ function createCardElement(item, options = {}) {
     typescript: "📘",
     tailwind: "🌊",
   };
+}
 
-  const techs = Array.isArray(item.techs) ? item.techs : [];
-  techs.forEach((tech) => {
-    const chip = document.createElement("span");
-    chip.setAttribute("aria-label", `Technologie utilisée : ${tech}`);
-    chip.className =
-      "px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5";
+function formatDate(timestamp) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(timestamp);
+}
 
-    const iconKey = String(tech).toLowerCase().trim();
-    const icon = techIcons[iconKey];
+function getDisplayTime(item) {
+  const created = parseItemDate(item.createdAt);
+  const pushed = parseItemDate(item.pushedAt);
+  const isNew = created !== null && Date.now() - created <= NEW_ITEM_THRESHOLD_MS;
+  if (isNew && created !== null) return created;
+  return pushed || created;
+}
 
-    chip.innerHTML = icon
-      ? `<span aria-hidden="true">${icon}</span> ${tech}`
-      : String(tech);
-    techList.appendChild(chip);
+function isItemNew(item) {
+  const created = parseItemDate(item.createdAt);
+  return created !== null && Date.now() - created <= NEW_ITEM_THRESHOLD_MS;
+}
+
+function createCard(item) {
+  const card = document.createElement("article");
+  card.className = "card";
+
+  // Carte entière cliquable
+  const cardUrl = safeExternalUrl(item.url);
+  card.addEventListener("click", () => {
+    if (cardUrl && cardUrl !== "#") {
+      window.open(cardUrl, "_blank", "noopener,noreferrer");
+    }
   });
 
-  const bottom = document.createElement("div");
-  bottom.className =
-    "flex items-center justify-between relative z-10 pt-6 border-t border-white/5";
+  // Bannière visuelle (gradient + icône)
+  if (item.gradient) {
+    const preview = document.createElement("div");
+    preview.className = "card-preview";
+    preview.style.background = item.gradient;
+    const previewIcon = document.createElement("span");
+    previewIcon.className = "card-preview-icon";
+    previewIcon.setAttribute("aria-hidden", "true");
+    previewIcon.textContent = item.icon || "🧩";
+    preview.appendChild(previewIcon);
+    card.appendChild(preview);
+  }
+
+  const top = document.createElement("div");
+  top.className = "card-top";
+
+  const icon = document.createElement("div");
+  icon.className = "card-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = item.icon || "🧩";
+
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "card-titlewrap";
+
+  const title = document.createElement("a");
+  title.href = safeExternalUrl(item.url);
+  title.target = "_blank";
+  title.rel = "noopener noreferrer";
+  title.className = "card-title";
+  title.textContent = item.title || "Projet";
+  title.title = `Ouvrir ${item.title || "ce projet"}`;
+
+  const author = document.createElement("p");
+  author.className = "card-author";
+  author.textContent = `par ${item.author || "inconnu"}`;
+
+  titleWrap.appendChild(title);
+  titleWrap.appendChild(author);
 
   const badge = document.createElement("span");
-  badge.className = `px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${item.badgeClass || ""}`;
+  badge.className = "card-badge";
   badge.textContent = item.tagText || "Projet";
+
+  const meta = document.createElement("div");
+  meta.className = "card-meta";
+  meta.appendChild(badge);
+
+  top.appendChild(icon);
+  top.appendChild(titleWrap);
+  top.appendChild(meta);
+  card.appendChild(top);
+
+  // Date discrète (dernier push GitHub ou création)
+  const displayTime = getDisplayTime(item);
+
+  if (displayTime !== null) {
+    const datePill = document.createElement("span");
+    datePill.className = isItemNew(item) ? "card-date is-new" : "card-date";
+    datePill.textContent = isItemNew(item) ? "Nouveau" : formatDate(displayTime);
+    meta.appendChild(datePill);
+  }
+
+  const desc = document.createElement("p");
+  desc.className = "card-desc";
+  desc.textContent = item.desc || "";
+  card.appendChild(desc);
+
+  const techs = Array.isArray(item.techs) ? item.techs : [];
+  if (techs.length > 0) {
+    const icons = createTechIcons();
+    const techList = document.createElement("div");
+    techList.className = "card-techs";
+    techs.forEach((tech) => {
+      const chip = document.createElement("span");
+      chip.className = "tech-chip";
+      const icon = icons[String(tech).toLowerCase().trim()];
+      chip.innerHTML = icon
+        ? `<span aria-hidden="true">${icon}</span> ${tech}`
+        : String(tech);
+      techList.appendChild(chip);
+    });
+    card.appendChild(techList);
+  }
+
+  const bottom = document.createElement("div");
+  bottom.className = "card-bottom";
+
+  const playLink = document.createElement("a");
+  playLink.href = safeExternalUrl(item.url);
+  playLink.target = "_blank";
+  playLink.rel = "noopener noreferrer";
+  playLink.className = "card-link";
+  playLink.setAttribute("aria-label", `Ouvrir ${item.title || "ce projet"}`);
+  playLink.title = `Ouvrir ${item.title || "ce projet"}`;
+  playLink.textContent = "Jouer →";
+  playLink.addEventListener("click", (event) => event.stopPropagation());
 
   const codeLink = document.createElement("a");
   codeLink.href = safeExternalUrl(item.github);
   codeLink.target = "_blank";
   codeLink.rel = "noopener noreferrer";
-  codeLink.className =
-    "text-xs font-bold text-gray-400 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-2";
-  codeLink.setAttribute(
-    "aria-label",
-    `Voir le code de ${item.title || "ce projet"}`,
-  );
+  codeLink.className = "card-link";
+  codeLink.setAttribute("aria-label", `Voir le code de ${item.title || "ce projet"}`);
+  codeLink.title = `Voir le code de ${item.title || "ce projet"}`;
   codeLink.appendChild(createGithubIcon());
   codeLink.appendChild(document.createTextNode("Code"));
+  codeLink.addEventListener("click", (event) => event.stopPropagation());
 
-  bottom.appendChild(badge);
+  bottom.appendChild(playLink);
   bottom.appendChild(codeLink);
-
-  card.appendChild(header);
-  card.appendChild(description);
-  card.appendChild(techList);
   card.appendChild(bottom);
+
   return card;
 }
 
-function createMemberBadgeElement(member) {
-  const username = /^[a-zA-Z0-9-]{1,39}$/.test(member.github)
-    ? member.github
-    : null;
-  const profileUrl = username ? `https://github.com/${username}` : "#";
-
-  const anchor = document.createElement("a");
-  anchor.href = profileUrl;
-  anchor.target = "_blank";
-  anchor.rel = "noopener noreferrer";
-  anchor.className =
-    "glass-pill rounded-full flex items-center gap-3 pr-4 pl-1.5 py-1.5 group";
-
-  const img = document.createElement("img");
-  img.src = username ? `https://github.com/${username}.png` : AVATAR_FALLBACK;
-  img.alt = `Avatar ${member.name || "membre"}`;
-  img.loading = "lazy";
-  img.decoding = "async";
-  img.width = 32;
-  img.height = 32;
-  img.className = "w-8 h-8 rounded-full border border-white/20 object-cover";
-  img.addEventListener(
-    "error",
-    () => {
-      img.src = AVATAR_FALLBACK;
-    },
-    { once: true },
-  );
-
-  const text = document.createElement("span");
-  text.className =
-    "text-sm font-bold text-gray-300 group-hover:text-white transition-colors";
-  text.textContent = member.name || "Membre";
-
-  anchor.appendChild(img);
-  anchor.appendChild(text);
-  return anchor;
+function renderGrid(container, items) {
+  clearElement(container);
+  if (items.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Aucun résultat.";
+    container.appendChild(empty);
+    return;
+  }
+  items.forEach((item) => container.appendChild(createCard(item)));
 }
 
-function renderFooterLinks(members, container) {
-  clearElement(container);
-  members.forEach((member, index) => {
-    if (index > 0) {
-      const separator = document.createElement("span");
-      separator.className = "opacity-50";
-      separator.textContent = "·";
-      container.appendChild(separator);
+function normalizeForSearch(str) {
+  return String(str || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function matchQuery(item, query) {
+  if (!query) return true;
+  const terms = query.split(/\s+/).filter(Boolean);
+  const searchable = normalizeForSearch(
+    [item.title, item.desc, item.author, item.tagText, ...(Array.isArray(item.techs) ? item.techs : [])]
+      .filter(Boolean)
+      .join(" "),
+  );
+  return terms.every((term) => searchable.includes(term));
+}
+
+function createSkeletonCard() {
+  const card = document.createElement("div");
+  card.className = "skeleton-card";
+  card.setAttribute("aria-hidden", "true");
+
+  const preview = document.createElement("div");
+  preview.className = "skeleton-block skeleton-preview";
+
+  const line1 = document.createElement("div");
+  line1.className = "skeleton-block skeleton-line wide";
+
+  const line2 = document.createElement("div");
+  line2.className = "skeleton-block skeleton-line short";
+
+  const desc1 = document.createElement("div");
+  desc1.className = "skeleton-block skeleton-line";
+  const desc2 = document.createElement("div");
+  desc2.className = "skeleton-block skeleton-line short";
+
+  const chips = document.createElement("div");
+  chips.className = "skeleton-chip-row";
+  for (let i = 0; i < 3; i++) {
+    const chip = document.createElement("div");
+    chip.className = "skeleton-block skeleton-chip";
+    chips.appendChild(chip);
+  }
+
+  card.appendChild(preview);
+  card.appendChild(line1);
+  card.appendChild(line2);
+  card.appendChild(desc1);
+  card.appendChild(desc2);
+  card.appendChild(chips);
+  return card;
+}
+
+function showSkeletons(containers, count) {
+  containers.forEach((container) => {
+    clearElement(container);
+    for (let i = 0; i < count; i++) {
+      container.appendChild(createSkeletonCard());
     }
-    const link = document.createElement("a");
-    link.href = safeExternalUrl(`https://github.com/${member.github || ""}`);
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.className = "hover:text-white transition-colors";
-    link.textContent = member.name || "Membre";
-    container.appendChild(link);
   });
 }
 
-function renderLoadError(elements, retryHandler) {
-  const {
-    gamesContainer,
-    favoritesContainer,
-    projectsContainer,
-    membersContainer,
-    footerLinks,
-  } = elements;
-  clearElement(membersContainer);
-  clearElement(footerLinks);
-  clearElement(gamesContainer);
-  if (favoritesContainer) clearElement(favoritesContainer);
-  clearElement(projectsContainer);
-
-  const errorCard = document.createElement("div");
-  errorCard.className = "bg-darkCard p-6 md:p-8 text-gray-300 space-y-4";
-  const message = document.createElement("p");
-  message.textContent =
-    "Impossible de charger les donnees du portail. Verifie la presence de data.json.";
-  const retryButton = document.createElement("button");
-  retryButton.type = "button";
-  retryButton.className =
-    "px-4 py-2 rounded-lg bg-white/10 border border-white/20 font-bold text-xs uppercase tracking-wider hover:bg-white/20 transition-colors";
-  retryButton.textContent = "Reessayer";
-  retryButton.addEventListener("click", retryHandler);
-
-  errorCard.appendChild(message);
-  errorCard.appendChild(retryButton);
-  gamesContainer.appendChild(errorCard);
+function createChip(label, isActive) {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = isActive ? "chip is-active" : "chip";
+  chip.setAttribute("aria-pressed", String(Boolean(isActive)));
+  chip.textContent = label;
+  return chip;
 }
 
-function createEmptyStateCard(message) {
-  const card = document.createElement("div");
-  card.className = "bg-darkCard p-6 md:p-8 text-gray-300 md:col-span-2";
-  card.textContent = message;
-  return card;
-}
-
-function buildResultsLabel(count, noun) {
-  return count <= 1 ? `${count} ${noun} trouve` : `${count} ${noun} trouves`;
-}
-
-// Utility: debounce function to reduce rerenders
-const debounce = (fn, ms) => {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), ms);
+function buildChips(container, categories, state, onUpdate) {
+  const renderChips = () => {
+    const chips = [
+      createChip("Tous", !state.filterTag),
+      ...categories.map((cat) => createChip(cat, state.filterTag === cat)),
+    ];
+    chips.forEach((chip, index) => {
+      const tag = index === 0 ? null : categories[index - 1];
+      chip.addEventListener("click", () => {
+        state.filterTag = tag;
+        renderChips();
+        onUpdate();
+      });
+    });
+    clearElement(container);
+    chips.forEach((chip) => container.appendChild(chip));
   };
-};
 
-window.addEventListener("DOMContentLoaded", async () => {
+  return renderChips;
+}
+
+async function init() {
   const membersContainer = document.getElementById("members-container");
   const gamesContainer = document.getElementById("games-container");
-  const favoritesSection = document.getElementById("favorites-section");
-  const favoritesContainer = document.getElementById("favorites-container");
   const projectsContainer = document.getElementById("projects-container");
+  const gamesChipsContainer = document.getElementById("games-chips");
+  const gamesCount = document.getElementById("games-count");
+  const projectsCount = document.getElementById("projects-count");
+  const gamesResults = document.getElementById("games-results");
+  const projectsResults = document.getElementById("projects-results");
+  const searchInput = document.getElementById("search");
   const footerLinks = document.getElementById("footer-links");
   const currentYear = document.getElementById("current-year");
-  const gamesSection = document.getElementById("games-section");
-  const projectsSection = document.getElementById("projects-section");
 
-  // --- Contrôles globaux ---
-  const globalSortSelect = document.getElementById("global-sort");
-  const globalAuthorFilterSelect = document.getElementById(
-    "global-author-filter",
-  );
-  const globalSearchInput = document.getElementById("global-search");
-  const globalOrderToggle = document.getElementById("global-order-toggle");
-  const globalResetFiltersButton = document.getElementById(
-    "global-reset-filters",
-  );
-  const globalFavoritesOnlyToggle = document.getElementById(
-    "global-favorites-only-toggle",
-  );
-
-  const gamesRecentNote = document.getElementById("games-recent-note");
-  const gamesResultsCount = document.getElementById("games-results-count");
-  const favoritesRecentNote = document.getElementById("favorites-recent-note");
-  const favoritesResultsCount = document.getElementById(
-    "favorites-results-count",
-  );
-  const projectsRecentNote = document.getElementById("projects-recent-note");
-  const projectsResultsCount = document.getElementById(
-    "projects-results-count",
-  );
-
-  if (
-    !membersContainer ||
-    !gamesContainer ||
-    !favoritesContainer ||
-    !projectsContainer ||
-    !footerLinks ||
-    !currentYear
-  ) {
-    return;
-  }
+  if (!gamesContainer || !projectsContainer || !currentYear) return;
 
   currentYear.textContent = String(new Date().getFullYear());
 
-  let cachedAppData = null;
-  const FAVORITES_STORAGE_KEY = "ksosFavorites";
-
-  const readFavorites = () => {
-    try {
-      const parsed = JSON.parse(
-        localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]",
-      );
-      return Array.isArray(parsed)
-        ? parsed.filter((value) => typeof value === "string")
-        : [];
-    } catch (_) {
-      return [];
-    }
+  const state = {
+    filterTag: null,
+    games: [],
+    projects: [],
   };
 
-  const buildFavoriteKey = (item) => {
-    if (item && item.id) return String(item.id);
-    const title = String(item.title || "")
-      .trim()
-      .toLowerCase();
-    const author = String(item.author || "")
-      .trim()
-      .toLowerCase();
-    const github = String(item.github || "")
-      .trim()
-      .toLowerCase();
-    const url = String(item.url || "")
-      .trim()
-      .toLowerCase();
-    return `${author}::${title}::${github || url}`;
-  };
+  // Skeletons pendant le chargement
+  showSkeletons([gamesContainer, projectsContainer], 3);
 
-  let favoriteKeys = new Set(readFavorites());
-
-  const saveFavorites = () => {
-    localStorage.setItem(
-      FAVORITES_STORAGE_KEY,
-      JSON.stringify(Array.from(favoriteKeys)),
-    );
-  };
-
-  const isFavorite = (item) => favoriteKeys.has(buildFavoriteKey(item));
-
-  const computeOldKey = (item) => {
-    const title = String(item.title || "")
-      .trim()
-      .toLowerCase();
-    const author = String(item.author || "")
-      .trim()
-      .toLowerCase();
-    const github = String(item.github || "")
-      .trim()
-      .toLowerCase();
-    const url = String(item.url || "")
-      .trim()
-      .toLowerCase();
-    return `${author}::${title}::${github || url}`;
-  };
-
-  const isFavoriteWithFallback = (item) => {
-    const key = buildFavoriteKey(item);
-    if (favoriteKeys.has(key)) return true;
-    // fallback: check old-style key
-    const oldKey = computeOldKey(item);
-    return favoriteKeys.has(oldKey);
-  };
-
-  const toggleFavorite = (item) => {
-    const key = buildFavoriteKey(item);
-    if (!key) return;
-
-    if (favoriteKeys.has(key)) {
-      favoriteKeys.delete(key);
-    } else {
-      favoriteKeys.add(key);
-    }
-
-    saveFavorites();
-    renderAll();
-  };
-
-  // Migrate stored favorites from old composite keys to the new `id` when possible
-  const migrateFavorites = (appData) => {
-    try {
-      const stored = readFavorites();
-      const items = [...(appData.games || []), ...(appData.projects || [])];
-      const idToItem = new Map();
-      items.forEach((it) => {
-        if (it && it.id) idToItem.set(String(it.id), it);
-      });
-
-      const oldKeyToId = new Map();
-      items.forEach((it) => {
-        const oldKey = computeOldKey(it);
-        if (it && it.id) oldKeyToId.set(oldKey, String(it.id));
-      });
-
-      let changed = false;
-      const newSet = new Set();
-      stored.forEach((k) => {
-        if (!k) return;
-        if (idToItem.has(k)) {
-          newSet.add(k);
-          return;
-        }
-        if (oldKeyToId.has(k)) {
-          newSet.add(oldKeyToId.get(k));
-          changed = true;
-          return;
-        }
-        // keep unknown entries as-is (avoid data loss)
-        newSet.add(k);
-      });
-
-      favoriteKeys = new Set(newSet);
-      if (changed) saveFavorites();
-    } catch (_) {
-      // ignore
-    }
-  };
-
-  // État global unique
-  let sortCriteria = localStorage.getItem("ksosSort") || "default";
-  let sortOrder = localStorage.getItem("ksosOrder") || "asc";
-  let authorFilter = localStorage.getItem("ksosAuthor") || "all";
-  let searchQuery = localStorage.getItem("ksosSearch") || "";
-  let showOnlyFavorites = localStorage.getItem("ksosShowOnlyFavorites") === "1";
-
-  let controlsBound = false;
-
-  const updateOrderToggleLabel = () => {
-    if (!globalOrderToggle) return;
-    const isDesc = sortOrder === "desc";
-    globalOrderToggle.textContent = isDesc ? "Ordre: Desc" : "Ordre: Asc";
-    globalOrderToggle.setAttribute("aria-pressed", String(isDesc));
-  };
-
-  const initializeFavoritesOnlyToggle = () => {
-    if (!globalFavoritesOnlyToggle) return;
-
-    globalFavoritesOnlyToggle.setAttribute(
-      "aria-pressed",
-      String(showOnlyFavorites),
-    );
-
-    if (controlsBound) return;
-
-    globalFavoritesOnlyToggle.addEventListener("click", () => {
-      showOnlyFavorites = !showOnlyFavorites;
-      localStorage.setItem(
-        "ksosShowOnlyFavorites",
-        showOnlyFavorites ? "1" : "0",
-      );
-      globalFavoritesOnlyToggle.setAttribute(
-        "aria-pressed",
-        String(showOnlyFavorites),
-      );
-      renderAll();
-    });
-  };
-
-  // Rend les deux sections avec le même filtre
-  const renderAll = () => {
-    if (!cachedAppData) return;
-
-    // Toggle visibility of Games and Projects sections when showing favorites only
-    if (gamesSection) {
-      gamesSection.classList.toggle("hidden", showOnlyFavorites);
-    }
-    if (projectsSection) {
-      projectsSection.classList.toggle("hidden", showOnlyFavorites);
-    }
-
-    const criteria = globalSortSelect?.value || sortCriteria;
-    const filterValue = globalAuthorFilterSelect?.value || authorFilter;
-    const query = globalSearchInput?.value ?? searchQuery;
-
-    const createCatalogCard = (item) =>
-      createCardElement(item, {
-        isFavorite: isFavoriteWithFallback(item),
-        onToggleFavorite: toggleFavorite,
-      });
-
-    // --- Jeux ---
-    const allGames = Array.isArray(cachedAppData.games)
-      ? cachedAppData.games
-      : [];
-    const allProjects = Array.isArray(cachedAppData.projects)
-      ? cachedAppData.projects
-      : [];
-
-    if (!showOnlyFavorites) {
-      const processedGames = sortAndFilterItems(
-        allGames,
-        criteria,
-        sortOrder,
-        filterValue,
-        query,
-      );
-
-      clearElement(gamesContainer);
-      if (processedGames.length === 0) {
-        gamesContainer.appendChild(
-          createEmptyStateCard("Aucun jeu ne correspond à votre recherche."),
-        );
-      } else {
-        processedGames.forEach((game) =>
-          gamesContainer.appendChild(createCatalogCard(game)),
-        );
-      }
-
-      if (gamesRecentNote) {
-        const hasDates = allGames.some((g) => getItemTimestamp(g) !== null);
-        gamesRecentNote.classList.toggle(
-          "hidden",
-          !(criteria === "recent" && !hasDates),
-        );
-      }
-      if (gamesResultsCount) {
-        gamesResultsCount.textContent = buildResultsLabel(
-          processedGames.length,
-          "jeu",
-        );
-      }
-    } else {
-      clearElement(gamesContainer);
-      if (gamesRecentNote) gamesRecentNote.classList.add("hidden");
-      if (gamesResultsCount) gamesResultsCount.textContent = "";
-    }
-
-    // --- Favoris ---
-    const dedupedCatalog = new Map();
-    [...allGames, ...allProjects].forEach((item) => {
-      dedupedCatalog.set(buildFavoriteKey(item), item);
-    });
-
-    const favoriteItems = Array.from(dedupedCatalog.values()).filter((item) =>
-      isFavorite(item),
-    );
-
-    const shouldShowFavorites = favoriteItems.length > 0;
-    if (favoritesSection) {
-      favoritesSection.classList.toggle("hidden", !shouldShowFavorites);
-    }
-
-    if (!shouldShowFavorites) {
-      clearElement(favoritesContainer);
-      if (favoritesRecentNote) favoritesRecentNote.classList.add("hidden");
-      if (favoritesResultsCount) favoritesResultsCount.textContent = "";
-    } else {
-      const processedFavorites = sortAndFilterItems(
-        favoriteItems,
-        criteria,
-        sortOrder,
-        filterValue,
-        query,
-      );
-
-      clearElement(favoritesContainer);
-      if (processedFavorites.length === 0) {
-        favoritesContainer.appendChild(
-          createEmptyStateCard("Aucun favori ne correspond a votre recherche."),
-        );
-      } else {
-        processedFavorites.forEach((favorite) =>
-          favoritesContainer.appendChild(createCatalogCard(favorite)),
-        );
-      }
-
-      if (favoritesRecentNote) {
-        const hasDates = favoriteItems.some(
-          (item) => getItemTimestamp(item) !== null,
-        );
-        favoritesRecentNote.classList.toggle(
-          "hidden",
-          !(criteria === "recent" && !hasDates),
-        );
-      }
-      if (favoritesResultsCount) {
-        favoritesResultsCount.textContent = buildResultsLabel(
-          processedFavorites.length,
-          "favori",
-        );
-      }
-    }
-
-    // --- Projets ---
-    if (!showOnlyFavorites) {
-      const processedProjects = sortAndFilterItems(
-        allProjects,
-        criteria,
-        sortOrder,
-        filterValue,
-        query,
-      );
-
-      clearElement(projectsContainer);
-      if (processedProjects.length === 0) {
-        projectsContainer.appendChild(
-          createEmptyStateCard("Aucun projet ne correspond à votre recherche."),
-        );
-      } else {
-        processedProjects.forEach((project) =>
-          projectsContainer.appendChild(createCatalogCard(project)),
-        );
-      }
-
-      if (projectsRecentNote) {
-        const hasDates = allProjects.some((p) => getItemTimestamp(p) !== null);
-        projectsRecentNote.classList.toggle(
-          "hidden",
-          !(criteria === "recent" && !hasDates),
-        );
-      }
-      if (projectsResultsCount) {
-        projectsResultsCount.textContent = buildResultsLabel(
-          processedProjects.length,
-          "projet",
-        );
-      }
-    } else {
-      clearElement(projectsContainer);
-      if (projectsRecentNote) projectsRecentNote.classList.add("hidden");
-      if (projectsResultsCount) projectsResultsCount.textContent = "";
-    }
-    observeCards();
-  };
-
-  const observeCards = () => {
-    const cardObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("card-visible");
-            cardObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.08 },
-    );
-    document
-      .querySelectorAll(".bento-grid > article, #projects-container > article")
-      .forEach((card) => {
-        if (!card.classList.contains("card-visible")) {
-          card.classList.add("card-enter");
-          cardObserver.observe(card);
-        }
-      });
-  };
-
-  const setupControls = (appData) => {
-    // Initialize favorites-only toggle independently, before checking other controls
-    initializeFavoritesOnlyToggle();
-
-    if (!globalSortSelect || !globalAuthorFilterSelect || !globalOrderToggle)
-      return;
-
-    // Construire les options d'auteurs à partir des deux collections
-    const allAuthors = buildAuthorOptions(
-      {
-        members: appData.members,
-        games: [...(appData.games || []), ...(appData.projects || [])],
-      },
-      "games",
-    );
-
-    clearElement(globalAuthorFilterSelect);
-    const allOption = document.createElement("option");
-    allOption.value = "all";
-    allOption.textContent = "Tous";
-    globalAuthorFilterSelect.appendChild(allOption);
-
-    allAuthors.forEach((author) => {
-      const option = document.createElement("option");
-      option.value = author.key;
-      option.textContent = author.label;
-      globalAuthorFilterSelect.appendChild(option);
-    });
-
-    // Restaurer l'état sauvegardé
-    if (globalSortSelect.querySelector(`option[value="${sortCriteria}"]`)) {
-      globalSortSelect.value = sortCriteria;
-    } else {
-      sortCriteria = "default";
-      globalSortSelect.value = "default";
-    }
-
-    if (
-      globalAuthorFilterSelect.querySelector(`option[value="${authorFilter}"]`)
-    ) {
-      globalAuthorFilterSelect.value = authorFilter;
-    } else {
-      authorFilter = "all";
-      globalAuthorFilterSelect.value = "all";
-    }
-
-    if (globalSearchInput) globalSearchInput.value = searchQuery;
-
-    updateOrderToggleLabel();
-
-    if (!controlsBound) {
-      globalSortSelect.addEventListener("change", (e) => {
-        sortCriteria = e.target.value;
-        localStorage.setItem("ksosSort", sortCriteria);
-        renderAll();
-      });
-
-      globalAuthorFilterSelect.addEventListener("change", (e) => {
-        authorFilter = e.target.value;
-        localStorage.setItem("ksosAuthor", authorFilter);
-        renderAll();
-      });
-
-      if (globalSearchInput) {
-        const debouncedSearch = debounce(() => {
-          localStorage.setItem("ksosSearch", searchQuery);
-          renderAll();
-        }, 150);
-        globalSearchInput.addEventListener("input", (e) => {
-          searchQuery = e.target.value;
-          debouncedSearch();
-        });
-      }
-
-      globalOrderToggle.addEventListener("click", () => {
-        sortOrder = sortOrder === "asc" ? "desc" : "asc";
-        localStorage.setItem("ksosOrder", sortOrder);
-        updateOrderToggleLabel();
-        renderAll();
-      });
-
-      if (globalResetFiltersButton) {
-        globalResetFiltersButton.addEventListener("click", () => {
-          sortCriteria = "default";
-          sortOrder = "asc";
-          authorFilter = "all";
-          searchQuery = "";
-          showOnlyFavorites = false;
-
-          localStorage.setItem("ksosShowOnlyFavorites", "0");
-          localStorage.setItem("ksosSort", sortCriteria);
-          localStorage.setItem("ksosOrder", sortOrder);
-          localStorage.setItem("ksosAuthor", authorFilter);
-          localStorage.setItem("ksosSearch", searchQuery);
-
-          globalSortSelect.value = "default";
-          globalAuthorFilterSelect.value = "all";
-          if (globalSearchInput) globalSearchInput.value = "";
-          if (globalFavoritesOnlyToggle) {
-            globalFavoritesOnlyToggle.setAttribute("aria-pressed", "false");
-          }
-          updateOrderToggleLabel();
-          renderAll();
-        });
-      }
-
-      controlsBound = true;
-    }
-  };
-
-  const refreshRepoDatesLast = document.getElementById(
-    "refresh-repo-dates-last",
-  );
-  const githubDot = document.getElementById("github-dot");
-  function formatLastChecked(timestamp) {
-    const diff = Date.now() - timestamp;
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "à l'instant";
-    if (mins < 60) return `il y a ${mins} min`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `il y a ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `il y a ${days}j`;
-  }
-
-  function updateGithubSyncUI(success) {
-    if (success) {
-      if (githubDot) {
-        githubDot.className = "w-2 h-2 rounded-full bg-emerald-400";
-      }
-    } else {
-      if (githubDot) {
-        githubDot.className = "w-2 h-2 rounded-full bg-gray-500";
-      }
-    }
-    if (refreshRepoDatesLast) {
-      const stored = localStorage.getItem(REPO_DATE_CACHE_KEY);
-      if (stored) {
-        try {
-          const cache = JSON.parse(stored);
-          const times = Object.values(cache).map(
-            (e) => Number(e.fetchedAt) || 0,
-          );
-          const latest = Math.max(...times, 0);
-          if (latest > 0) {
-            refreshRepoDatesLast.textContent = `Dernière vérification : ${formatLastChecked(latest)}`;
-          }
-        } catch (_) {}
-      }
-    }
-  }
-
-  const renderData = async () => {
-    const appData = await fetchAppData();
-    cachedAppData = await enrichAppDataWithGithubDates(appData);
-    // Attempt migration of existing favorites to item `id` when possible
-    migrateFavorites(cachedAppData);
-
-    clearElement(membersContainer);
-    clearElement(favoritesContainer);
-    clearElement(projectsContainer);
-
-    (cachedAppData.members || []).forEach((member) => {
-      membersContainer.appendChild(createMemberBadgeElement(member));
-    });
-
-    setupControls(cachedAppData);
-    renderAll();
-
-    renderFooterLinks(cachedAppData.members || [], footerLinks);
-  };
-
+  let appData;
   try {
-    await renderData();
-  } catch (error) {
-    console.error(error);
-    renderLoadError(
-      {
-        gamesContainer,
-        favoritesContainer,
-        projectsContainer,
-        membersContainer,
-        footerLinks,
-      },
-      async () => {
-        try {
-          await renderData();
-        } catch (retryError) {
-          console.error(retryError);
-        }
-      },
-    );
-  }
-
-  updateGithubSyncUI(true);
-
-  // --- Logique Modale et Paramètres ---
-  const notch = document.getElementById("settings-notch");
-  const settingsOverlay = document.getElementById("settings-modal-overlay");
-  const settingsModal = settingsOverlay?.querySelector(".custom-modal");
-  const closeSettings = document.getElementById("close-settings");
-  const themeToggle = document.getElementById("theme-toggle");
-  const themeLabel = document.getElementById("theme-label");
-  const introToggle = document.getElementById("intro-toggle");
-  const refreshRepoDatesButton = document.getElementById("refresh-repo-dates");
-  const refreshRepoDatesStatus = document.getElementById(
-    "refresh-repo-dates-status",
-  );
-  const themeRadios = document.querySelectorAll('input[name="color-theme"]');
-  const mainContent = document.getElementById("main-content");
-
-  if (
-    !notch ||
-    !settingsOverlay ||
-    !settingsModal ||
-    !closeSettings ||
-    !themeToggle ||
-    !themeLabel
-  )
-    return;
-
-  const focusableSelector =
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-  let lastFocusedElement = null;
-  let modalOpen = false;
-
-  const getFocusableInModal = () =>
-    Array.from(settingsModal.querySelectorAll(focusableSelector)).filter(
-      (el) => !el.hasAttribute("disabled") && !el.getAttribute("aria-hidden"),
-    );
-
-  const openSettings = () => {
-    if (modalOpen) return;
-    modalOpen = true;
-    lastFocusedElement = document.activeElement;
-
-    settingsOverlay.classList.remove("opacity-0", "pointer-events-none");
-    settingsOverlay.classList.add("opacity-100", "pointer-events-auto");
-    settingsModal.classList.add("scale-100");
-    settingsOverlay.setAttribute("aria-hidden", "false");
-    notch.setAttribute("aria-expanded", "true");
-    if (mainContent) mainContent.setAttribute("inert", "");
-
-    const [firstFocusable] = getFocusableInModal();
-    if (firstFocusable) firstFocusable.focus();
-  };
-
-  const closeModal = () => {
-    if (!modalOpen) return;
-    modalOpen = false;
-
-    settingsOverlay.classList.remove("opacity-100", "pointer-events-auto");
-    settingsOverlay.classList.add("opacity-0", "pointer-events-none");
-    settingsModal.classList.remove("scale-100");
-    settingsOverlay.setAttribute("aria-hidden", "true");
-    notch.setAttribute("aria-expanded", "false");
-    if (mainContent) mainContent.removeAttribute("inert");
-
-    if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
-      lastFocusedElement.focus();
-    }
-  };
-
-  notch.addEventListener("click", openSettings);
-  closeSettings.addEventListener("click", closeModal);
-
-  settingsOverlay.addEventListener("click", (event) => {
-    if (event.target === settingsOverlay) closeModal();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (!modalOpen) return;
-    if (event.key === "Escape") {
-      closeModal();
-      return;
-    }
-    if (event.key === "Tab") {
-      const focusable = getFocusableInModal();
-      if (focusable.length === 0) {
-        event.preventDefault();
-        return;
-      }
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-  });
-
-  const setThemeLabel = (isLight) => {
-    themeLabel.textContent = isLight ? "Mode Clair ☀️" : "Mode Sombre 🌙";
-  };
-
-  const isLightTheme = localStorage.getItem("ksosTheme") === "light";
-  themeToggle.checked = isLightTheme;
-  setThemeLabel(isLightTheme);
-
-  themeToggle.addEventListener("change", (event) => {
-    if (event.target.checked) {
-      document.documentElement.classList.add("light-mode");
-      localStorage.setItem("ksosTheme", "light");
-      setThemeLabel(true);
-    } else {
-      document.documentElement.classList.remove("light-mode");
-      localStorage.setItem("ksosTheme", "dark");
-      setThemeLabel(false);
-    }
-  });
-
-  if (introToggle) {
-    const introEnabled = localStorage.getItem("ksosIntroEnabled") !== "0";
-    introToggle.checked = introEnabled;
-
-    introToggle.addEventListener("change", (event) => {
-      localStorage.setItem(
-        "ksosIntroEnabled",
-        event.target.checked ? "1" : "0",
-      );
-    });
-  }
-
-  function triggerGithubRefresh() {
-    if (!refreshRepoDatesButton) return;
-    refreshRepoDatesButton.disabled = true;
-    refreshRepoDatesButton.classList.add("opacity-50", "cursor-not-allowed");
-    if (refreshRepoDatesStatus) {
-      refreshRepoDatesStatus.textContent = "Vérification en cours...";
-    }
-
-    clearRepoDateCache();
-    renderData()
-      .then(() => {
-        if (refreshRepoDatesStatus) {
-          refreshRepoDatesStatus.textContent = "Dates mises à jour ✓";
-        }
-        updateGithubSyncUI(true);
-      })
-      .catch((error) => {
-        console.error(error);
-        if (refreshRepoDatesStatus) {
-          refreshRepoDatesStatus.textContent =
-            "Échec — les dates en cache ont été conservées.";
-        }
-        updateGithubSyncUI(false);
-      })
-      .finally(() => {
-        refreshRepoDatesButton.disabled = false;
-        refreshRepoDatesButton.classList.remove(
-          "opacity-50",
-          "cursor-not-allowed",
-        );
-      });
-  }
-
-  if (refreshRepoDatesButton) {
-    refreshRepoDatesButton.addEventListener("click", triggerGithubRefresh);
-  }
-
-  const updateThemeOptionSelection = () => {
-    themeRadios.forEach((radio) => {
-      if (radio.parentElement) {
-        radio.parentElement.classList.toggle(
-          "theme-option-selected",
-          radio.checked,
-        );
-      }
-    });
-  };
-
-  const activeColorTheme = localStorage.getItem("ksosColorTheme") || "default";
-  const activeRadio = document.querySelector(
-    `input[name="color-theme"][value="${activeColorTheme}"]`,
-  );
-  if (activeRadio) activeRadio.checked = true;
-  updateThemeOptionSelection();
-
-  themeRadios.forEach((radio) => {
-    radio.addEventListener("change", (event) => {
-      const selected = event.target.value;
-      document.documentElement.setAttribute("data-theme", selected);
-      localStorage.setItem("ksosColorTheme", selected);
-      updateThemeOptionSelection();
-    });
-  });
-
-  // --- Logique Splash Screen ---
-  const splashScreen = document.getElementById("splash-screen");
-  const skipSplashButton = document.getElementById("skip-splash");
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
-  const introEnabled = localStorage.getItem("ksosIntroEnabled") !== "0";
-  const splashTimers = [];
-
-  const clearSplashTimers = () => {
-    splashTimers.forEach((timer) => clearTimeout(timer));
-    splashTimers.length = 0;
-  };
-
-  const revealMainContent = () => {
-    if (!mainContent) return;
-    mainContent.classList.add("animate-fade-in");
-    mainContent.classList.remove("opacity-0");
-  };
-
-  const removeSplash = () => {
-    clearSplashTimers();
-    if (splashScreen) splashScreen.remove();
-    document.body.style.overflow = "";
-  };
-
-  if (!splashScreen || prefersReducedMotion || !introEnabled) {
-    revealMainContent();
-    removeSplash();
+    const response = await fetch("./data.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("data.json injoignable");
+    appData = await response.json();
+  } catch (_) {
+    const msg = document.createElement("p");
+    msg.className = "empty-state";
+    msg.textContent = "Impossible de charger les données du portail. Vérifie la présence de data.json.";
+    gamesContainer.appendChild(msg);
+    clearElement(projectsContainer);
     return;
   }
 
-  const skipSplash = () => {
-    revealMainContent();
-    removeSplash();
+  const members = Array.isArray(appData.members) ? appData.members : [];
+  const games = Array.isArray(appData.games) ? appData.games : [];
+  const projects = Array.isArray(appData.projects) ? appData.projects : [];
+
+  // Membres
+  if (membersContainer) {
+    members.forEach((m) => membersContainer.appendChild(createMemberBadge(m)));
+  }
+
+  // Footer
+  if (footerLinks) {
+    members.forEach((m, i) => {
+      if (i > 0) footerLinks.appendChild(document.createTextNode("·"));
+      const link = document.createElement("a");
+      link.href = safeExternalUrl(`https://github.com/${m.github || ""}`);
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = m.name || "Membre";
+      footerLinks.appendChild(link);
+    });
+  }
+
+  // Tri + rendu
+  const sortByDateDesc = (items) =>
+    [...items].sort((a, b) => {
+      const timeA = getDisplayTime(a);
+      const timeB = getDisplayTime(b);
+      if (timeA === null && timeB === null) return 0;
+      if (timeA === null) return 1;
+      if (timeB === null) return -1;
+      return timeB - timeA;
+    });
+
+  const pluralize = (count, singular) => {
+    if (count <= 1) return `${count} ${singular}`;
+    const exceptions = { "jeu": "jeux", "jeu trouvé": "jeux trouvés" };
+    return `${count} ${exceptions[singular] || `${singular}s`}`;
   };
 
-  if (skipSplashButton) skipSplashButton.addEventListener("click", skipSplash);
+  const cache = readRepoDateCache();
 
-  document.body.style.overflow = "hidden";
-  window.scrollTo(0, 0);
+  const applyCachedDate = (item) => {
+    const slug = extractGithubRepoSlug(item.github);
+    const entry = slug ? cache[slug] : null;
+    if (
+      entry &&
+      typeof entry.pushedAt === "string" &&
+      Date.now() - Number(entry.fetchedAt) < REPO_DATE_CACHE_TTL_MS
+    ) {
+      return { ...item, pushedAt: entry.pushedAt };
+    }
+    return item;
+  };
 
-  splashTimers.push(
-    setTimeout(() => splashScreen.classList.add("splash-step-2"), 500),
-  );
-  splashTimers.push(
-    setTimeout(() => {
-      splashScreen.classList.add("splash-step-3");
-      revealMainContent();
-    }, 1800),
-  );
-  splashTimers.push(setTimeout(() => removeSplash(), 2800));
-});
+  state.games = sortByDateDesc(games.map(applyCachedDate));
+  state.projects = sortByDateDesc(projects.map(applyCachedDate));
+
+  function update() {
+    const query = searchInput ? searchInput.value.trim() : "";
+    const filteredGames = state.games.filter(
+      (g) =>
+        (!state.filterTag || g.tagText === state.filterTag) &&
+        matchQuery(g, query),
+    );
+    const filteredProjects = state.projects.filter((p) => matchQuery(p, query));
+
+    renderGrid(gamesContainer, filteredGames);
+    renderGrid(projectsContainer, filteredProjects);
+
+    if (gamesCount) gamesCount.textContent = pluralize(filteredGames.length, "jeu");
+    if (projectsCount) projectsCount.textContent = pluralize(filteredProjects.length, "outil");
+
+    const filtering = Boolean(query) || Boolean(state.filterTag);
+    if (gamesResults) {
+      gamesResults.textContent = filtering
+        ? pluralize(filteredGames.length, "jeu trouvé")
+        : "";
+    }
+    if (projectsResults) {
+      projectsResults.textContent = query
+        ? pluralize(filteredProjects.length, "outil trouvé")
+        : "";
+    }
+  }
+
+  // Chips de catégories (jeux)
+  if (gamesChipsContainer) {
+    const categories = Array.from(
+      new Set(state.games.map((g) => g.tagText).filter(Boolean)),
+    );
+    const renderChips = buildChips(gamesChipsContainer, categories, state, update);
+    renderChips();
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      clearTimeout(update._timer);
+      update._timer = setTimeout(update, 150);
+    });
+  }
+
+  // Premier rendu immédiat (dates en cache ou createdAt)
+  update();
+
+  // Enrichissement GitHub en arrière-plan, puis re-tri et re-rendu
+  (async () => {
+    const [enrichedGames, enrichedProjects] = await Promise.all([
+      Promise.all(games.map((g) => enrichWithGithubDate(g, cache))),
+      Promise.all(projects.map((p) => enrichWithGithubDate(p, cache))),
+    ]);
+    state.games = sortByDateDesc(enrichedGames);
+    state.projects = sortByDateDesc(enrichedProjects);
+    update();
+  })();
+}
+
+document.addEventListener("DOMContentLoaded", init);

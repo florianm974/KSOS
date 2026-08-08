@@ -17,8 +17,7 @@
       "icon": "🥥",
       "tagText": "Party game",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-fuchsia-400",
-      "badgeClass": "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20"
+      "gradient": "linear-gradient(135deg, #7a2f8f 0%, #2b1040 60%, #141024 100%)"
     },
     {
       "id": "fall974-le-petit-bac",
@@ -31,8 +30,7 @@
       "icon": "🔤",
       "tagText": "Quiz",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-indigo-400",
-      "badgeClass": "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+      "gradient": "linear-gradient(135deg, #4f46e5 0%, #1e1b4b 60%, #141024 100%)"
     },
     {
       "id": "albarkun222-vroomdle",
@@ -45,8 +43,7 @@
       "icon": "🏎️",
       "tagText": "Déduction",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-teal-400",
-      "badgeClass": "bg-teal-500/10 text-teal-400 border-teal-500/20"
+      "gradient": "linear-gradient(135deg, #0f766e 0%, #134e4a 55%, #141024 100%)"
     },
     {
       "id": "albarkun222-allverse",
@@ -59,8 +56,7 @@
       "icon": "🃏",
       "tagText": "TCG",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-emerald-400",
-      "badgeClass": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+      "gradient": "linear-gradient(135deg, #059669 0%, #064e3b 55%, #141024 100%)"
     },
     {
       "id": "infinity974-undercover",
@@ -73,8 +69,7 @@
       "icon": "🕵️",
       "tagText": "Party game",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-orange-400",
-      "badgeClass": "bg-orange-500/10 text-orange-400 border-orange-500/20"
+      "gradient": "linear-gradient(135deg, #c2410c 0%, #431407 55%, #141024 100%)"
     },
     {
       "id": "infinity974-top-ten",
@@ -87,8 +82,7 @@
       "icon": "🔟",
       "tagText": "Party game",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-cyan-400",
-      "badgeClass": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+      "gradient": "linear-gradient(135deg, #0891b2 0%, #164e63 55%, #141024 100%)"
     },
     {
       "id": "infinity974-redflag",
@@ -101,8 +95,7 @@
       "icon": "🚩",
       "tagText": "Party game",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-red-400",
-      "badgeClass": "bg-red-500/10 text-red-400 border-red-500/20"
+      "gradient": "linear-gradient(135deg, #dc2626 0%, #450a0a 55%, #141024 100%)"
     }
   ],
   "projects": [
@@ -117,8 +110,7 @@
       "icon": "⚙️",
       "tagText": "Outil IA",
       "techs": ["HTML", "CSS", "JavaScript"],
-      "hoverClass": "group-hover:text-slate-400",
-      "badgeClass": "bg-slate-500/10 text-slate-400 border-slate-500/20"
+      "gradient": "linear-gradient(135deg, #8b5cf6 0%, #312e81 55%, #141024 100%)"
     }
   ]
 }

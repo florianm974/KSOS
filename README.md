@@ -36,12 +36,11 @@ Chaque entrée référence le lien GitHub du projet et sa page live ; la date du
 
 ## Fonctionnalités
 
-- Bento grid triable (titre, auteur, récent) et filtrable (auteur, recherche, favoris)
-- Favoris persistés dans `localStorage`
-- 4 thèmes visuels (Signature, Cyberpunk, Toxique, Synthwave) + mode clair/sombre
-- Splash screen d'intro désactivable
+- Une page, un thème dark or/violet, sans fioritures
+- Recherche instantanée (titre, description, auteur, technologie)
+- Cartes uniformes avec badge de catégorie et date du dernier push
+- Date de dernier commit récupérée via l'API GitHub (mise en cache 12 h)
 - Service Worker pour l'accès hors-ligne
-- Dates des repos mises en cache et actualisables (bouton « Forcer refresh »)
 
 ---
 
