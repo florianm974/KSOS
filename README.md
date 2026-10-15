@@ -30,17 +30,17 @@ Le contenu est entièrement piloté par [`data.json`](data.json) :
 - **Jeux** : Blanc Manger Coco, Le Petit Bac, VroomDle, AllVerse, Undercover, Top Ten, RedFlag
 - **Outils** : Prompt Forge
 
-Chaque entrée référence le lien GitHub du projet et sa page live ; la date du dernier push est récupérée via l'API GitHub.
+Chaque entrée référence le lien GitHub du projet et sa page live.
 
 ---
 
 ## Fonctionnalités
 
-- Une page, un thème dark inspiré du drapeau de La Réunion (bleu océan, rouge volcan, or soleil), sans fioritures
-- Recherche instantanée (titre, description, auteur, technologie)
-- Cartes uniformes avec badge de catégorie et date du dernier push
-- Date du dernier push récupérée via l'API GitHub (mise en cache 12 h)
-- Service Worker pour l'accès hors-ligne
+- Thème « Aurora » : halos violet/cyan animés en fond, halo qui suit la souris, cartes à liseré dégradé
+- Mode sombre / clair au choix (mémorisé, suit la préférence système par défaut)
+- Badge de catégorie, badges de technologies et date de création (pastille « Nouveau » si récent)
+- Contenu et membres pilotés par `data.json`
+- Accessibilité : lien d'évitement, focus visible, respect de `prefers-reduced-motion`
 
 ---
 

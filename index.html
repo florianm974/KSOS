@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#08080d" />
     <title>KSOS — Portail de jeux & projets</title>
     <meta
       name="description"
@@ -36,20 +37,48 @@
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"
     />
 
+    <!-- Thème choisi avant le rendu, pour éviter tout clignotement -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("ksos-theme");
+          if (theme !== "light" && theme !== "dark") {
+            theme = window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+          }
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (_) {}
+      })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link href="./style.css" rel="stylesheet" />
   </head>
 
   <body>
-    <!-- Fond subtil -->
-    <div class="bg-glow" aria-hidden="true"></div>
+    <a class="skip-link" href="#main">Aller au contenu</a>
 
-    <main class="container">
+    <!-- Fonds décoratifs -->
+    <div class="bg-glow" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+
+    <!-- Bascule de thème -->
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-label="Passer au thème clair"
+    >
+      ☀️
+    </button>
+
+    <main id="main" class="container">
       <!-- HERO -->
       <header class="hero">
         <h1 class="hero-title">KSOS</h1>
@@ -59,24 +88,12 @@
         <div id="members-container" class="members" aria-label="Membres du collectif"></div>
       </header>
 
-      <!-- RECHERCHE -->
-      <div class="search-wrap">
-        <input
-          id="search"
-          type="search"
-          placeholder="Rechercher un jeu, un outil, un auteur…"
-          aria-label="Rechercher un projet"
-        />
-      </div>
-
       <!-- SECTION JEUX -->
       <section class="section" aria-labelledby="games-title">
         <div class="section-head">
           <h2 id="games-title" class="section-title">Jeux</h2>
           <span id="games-count" class="section-count" aria-live="polite"></span>
         </div>
-        <div id="games-chips" class="chips" role="group" aria-label="Filtrer les jeux par catégorie"></div>
-        <p id="games-results" class="results-info" role="status" aria-live="polite"></p>
         <div id="games-container" class="grid"></div>
       </section>
 
@@ -86,7 +103,6 @@
           <h2 id="projects-title" class="section-title">Outils</h2>
           <span id="projects-count" class="section-count" aria-live="polite"></span>
         </div>
-        <p id="projects-results" class="results-info" role="status" aria-live="polite"></p>
         <div id="projects-container" class="grid"></div>
       </section>
 
@@ -98,12 +114,5 @@
     </main>
 
     <script src="./app.js"></script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./sw.js").catch(() => {});
-        });
-      }
-    </script>
   </body>
 </html>

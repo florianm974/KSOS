@@ -32,8 +32,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #7c5a86 0%, #3a2c45 55%, #0e1626 100%)"
+      ]
     },
     {
       "id": "fall974-le-petit-bac",
@@ -49,8 +48,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #5a6ba8 0%, #2b3358 55%, #0e1626 100%)"
+      ]
     },
     {
       "id": "albarkun222-vroomdle",
@@ -66,8 +64,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #3f7d77 0%, #1f3d3a 55%, #0e1626 100%)"
+      ]
     },
     {
       "id": "albarkun222-allverse",
@@ -83,8 +80,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #4f8a72 0%, #24463a 55%, #0e1626 100%)"
+      ]
     },
     {
       "id": "infinity974-undercover",
@@ -100,8 +96,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #b5713f 0%, #5c3a20 55%, #0e1626 100%)"
+      ]
     },
     {
       "id": "infinity974-top-ten",
@@ -117,8 +112,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #3d7d9c 0%, #1c3c4d 55%, #0e1626 100%)"
+      ]
     },
     {
       "id": "infinity974-redflag",
@@ -134,8 +128,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #a8503f 0%, #4a2620 55%, #0e1626 100%)"
+      ]
     }
   ],
   "projects": [
@@ -153,8 +146,7 @@
         "HTML",
         "CSS",
         "JavaScript"
-      ],
-      "gradient": "linear-gradient(135deg, #bf6b55 0%, #5c2a22 55%, #0e1626 100%)"
+      ]
     }
   ]
 }
